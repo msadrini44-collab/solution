@@ -58,9 +58,16 @@
   }
 
   function color(score) {
-    if (score >= 60) return getComputedStyle(document.documentElement).getPropertyValue("--green").trim() || "#2ecc71";
-    if (score >= 40) return getComputedStyle(document.documentElement).getPropertyValue("--amber").trim() || "#f5a623";
-    return getComputedStyle(document.documentElement).getPropertyValue("--red").trim() || "#ff4d6d";
+    if (score >= 60) return getComputedStyle(document.documentElement).getPropertyValue("--green").trim() || "#2bb673";
+    if (score >= 40) return getComputedStyle(document.documentElement).getPropertyValue("--amber").trim() || "#e0a43b";
+    return getComputedStyle(document.documentElement).getPropertyValue("--red").trim() || "#e25563";
+  }
+
+  // Map a 0-100 authenticity score to a status class (ok / warn / bad).
+  function statusClass(score) {
+    if (score >= 60) return "ok";
+    if (score >= 40) return "warn";
+    return "bad";
   }
 
   // ----- Local history cache (offline + quick access) -----------------------
@@ -69,6 +76,7 @@
     catch (e) { return []; }
   }
   function pushLocalHistory(entry) {
+    if (localStorage.getItem("adf_cache_disabled") === "1") return;
     var h = localHistory();
     h.unshift(entry);
     localStorage.setItem("adf_history", JSON.stringify(h.slice(0, 100)));
@@ -196,10 +204,12 @@
     var chip = $("#userChip");
     if (chip) {
       if (email()) {
-        chip.innerHTML = '<span>' + email() + '</span> <button class="btn btn-ghost" id="logoutBtn" style="padding:6px 14px;">Log out</button>';
+        var initial = email().charAt(0).toUpperCase();
+        chip.innerHTML = '<span class="email"><span class="avatar">' + initial + '</span>' + email() + '</span>' +
+          '<button class="btn btn-ghost btn-sm" id="logoutBtn">Log out</button>';
         var lb = $("#logoutBtn"); if (lb) lb.addEventListener("click", logout);
       } else {
-        chip.innerHTML = '<button class="btn btn-primary" id="openAuth" style="padding:8px 18px;">Sign in / Register</button>';
+        chip.innerHTML = '<button class="btn btn-primary btn-sm" id="openAuth">Sign in / Register</button>';
         var oa = $("#openAuth"); if (oa) oa.addEventListener("click", openAuthModal);
       }
     }
@@ -389,7 +399,7 @@
     renderGauge(Math.round(res.score));
     var vp = $("#verdictPill");
     vp.textContent = res.verdict;
-    vp.className = "verdict-pill verdict-" + (res.verdict || "").replace(/\s+/g, ".");
+    vp.className = "verdict-pill " + statusClass(res.score);
     renderBreakdown(res.breakdown);
 
     // Visualizations (only when backend produced artifacts).
@@ -522,6 +532,152 @@
     if (keyEl) keyEl.textContent = apiKey() || "Sign in to view your API key";
   }
 
+  // ----- Copy-to-clipboard buttons -----------------------------------------
+  function flashCopied(btn) {
+    var orig = btn.innerHTML;
+    btn.textContent = "Copied";
+    setTimeout(function () { btn.innerHTML = orig; }, 1400);
+  }
+  function initCopyButtons() {
+    $all("#copyApiKey, #copyApiKey2").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var key = apiKey();
+        if (!key) { return; }
+        if (navigator.clipboard) navigator.clipboard.writeText(key).then(function () { flashCopied(btn); });
+        else flashCopied(btn);
+      });
+    });
+  }
+
+  // ----- Settings page ------------------------------------------------------
+  function initSettings() {
+    var apiBaseInput = $("#apiBaseInput");
+    if (!apiBaseInput) return;
+    apiBaseInput.value = API_BASE;
+    $("#settingsEmail").textContent = email() || "Not signed in";
+    var keyEl = $("#settingsApiKey");
+    if (keyEl) keyEl.textContent = apiKey() || "Sign in to view your API key";
+
+    var conn = $("#connStatus");
+    API.health().then(function (ok) {
+      if (conn) { conn.textContent = ok ? "Connected" : "Not reachable"; conn.style.color = ok ? "var(--green)" : "var(--red)"; }
+    });
+
+    var save = $("#saveApiBase");
+    if (save) save.addEventListener("click", function () {
+      var v = apiBaseInput.value.trim().replace(/\/$/, "");
+      if (v) localStorage.setItem("adf_api_base", v); else localStorage.removeItem("adf_api_base");
+      location.reload();
+    });
+
+    var signIn = $("#settingsSignIn");
+    if (signIn) signIn.addEventListener("click", openAuthModal);
+    var lo = $("#settingsLogout");
+    if (lo) lo.addEventListener("click", logout);
+
+    var clear = $("#clearCache");
+    if (clear) clear.addEventListener("click", function () {
+      localStorage.removeItem("adf_history");
+      localStorage.removeItem("adf_last_scan");
+      clear.textContent = "Cleared";
+      setTimeout(function () { clear.textContent = "Clear cache"; }, 1400);
+    });
+
+    var toggle = $("#localCacheToggle");
+    if (toggle) {
+      toggle.checked = localStorage.getItem("adf_cache_disabled") !== "1";
+      toggle.addEventListener("change", function () {
+        if (toggle.checked) localStorage.removeItem("adf_cache_disabled");
+        else { localStorage.setItem("adf_cache_disabled", "1"); localStorage.removeItem("adf_history"); }
+      });
+    }
+  }
+
+  // ----- History page -------------------------------------------------------
+  function initHistory() {
+    var body = $("#historyBody");
+    if (!body) return;
+    var all = [];
+    var state = { q: "", filter: "all", sort: "created_at", dir: -1 };
+
+    function bucket(s) {
+      if (/FAKE/.test(s.verdict || "")) return "flagged";
+      if (/SUSPICIOUS/.test(s.verdict || "")) return "inconclusive";
+      if (/REAL/.test(s.verdict || "")) return "authentic";
+      return "inconclusive";
+    }
+
+    function apply() {
+      var rows = all.filter(function (s) {
+        if (state.filter !== "all" && bucket(s) !== state.filter) return false;
+        if (state.q && (s.filename || s.scan_id || "").toLowerCase().indexOf(state.q) === -1) return false;
+        return true;
+      });
+      rows.sort(function (a, b) {
+        var av = a[state.sort], bv = b[state.sort];
+        if (state.sort === "score") { av = av || 0; bv = bv || 0; }
+        else { av = (av || "").toString(); bv = (bv || "").toString(); }
+        return (av < bv ? -1 : av > bv ? 1 : 0) * state.dir;
+      });
+      render(rows);
+    }
+
+    function render(rows) {
+      body.innerHTML = "";
+      var empty = $("#historyEmpty"), table = $("#historyTable");
+      if (!rows.length) { if (empty) empty.style.display = "block"; if (table) table.style.display = "none"; return; }
+      if (empty) empty.style.display = "none"; if (table) table.style.display = "table";
+      rows.forEach(function (s) {
+        var sc = s.score != null ? Math.round(s.score) : null;
+        var cls = sc == null ? "warn" : statusClass(sc);
+        var date = s.created_at ? new Date(s.created_at).toLocaleString() : "—";
+        var tr = document.createElement("tr");
+        tr.addEventListener("click", function () { location.href = "results.html?scan=" + encodeURIComponent(s.scan_id); });
+        tr.innerHTML =
+          "<td>" + (s.filename || s.scan_id) + "</td>" +
+          "<td>" + (s.media_type || "—") + "</td>" +
+          '<td><span class="pill ' + cls + '">' + (s.verdict || s.status || "—") + "</span></td>" +
+          '<td style="font-variant-numeric:tabular-nums;">' + (sc != null ? sc : "—") + "</td>" +
+          '<td style="color:var(--text-dim);">' + date + "</td>";
+        body.appendChild(tr);
+      });
+    }
+
+    function load(items) {
+      var seen = {}, uniq = [];
+      items.forEach(function (s) { if (s && s.scan_id && !seen[s.scan_id]) { seen[s.scan_id] = 1; uniq.push(s); } });
+      all = uniq;
+      apply();
+    }
+
+    if ((token() || apiKey()) && API.online) {
+      API.history().then(function (data) { load((data.scans || []).concat(localHistory())); })
+        .catch(function () { load(localHistory()); });
+    } else {
+      load(localHistory());
+    }
+
+    var search = $("#historySearch");
+    if (search) search.addEventListener("input", function () { state.q = search.value.trim().toLowerCase(); apply(); });
+
+    var filter = $("#historyFilter");
+    if (filter) filter.addEventListener("click", function (e) {
+      var b = e.target.closest("button"); if (!b) return;
+      $all("button", filter).forEach(function (x) { x.classList.remove("active"); });
+      b.classList.add("active");
+      state.filter = b.getAttribute("data-filter");
+      apply();
+    });
+
+    $all("th[data-sort]", $("#historyTable")).forEach(function (th) {
+      th.addEventListener("click", function () {
+        var key = th.getAttribute("data-sort");
+        if (state.sort === key) state.dir *= -1; else { state.sort = key; state.dir = key === "score" ? -1 : 1; }
+        apply();
+      });
+    });
+  }
+
   // ----- Boot ---------------------------------------------------------------
   document.addEventListener("DOMContentLoaded", function () {
     initSidebar();
@@ -532,9 +688,12 @@
       if (banner && !ok) banner.classList.remove("hidden");
     });
     initAuthUI();
+    initCopyButtons();
     initDashboard();
     initScanner();
     initResults();
+    initHistory();
+    initSettings();
   });
 
   // Expose a couple of helpers for inline use / debugging.

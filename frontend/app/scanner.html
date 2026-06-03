@@ -3,82 +3,108 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Scanner — AntiDeepfake AI</title>
+  <title>New analysis — AntiDeepfake</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/app.css" />
 </head>
 <body>
   <div class="app-shell">
     <aside class="sidebar" id="sidebar">
-      <a href="../index.html" class="brand"><span class="logo">🛡️</span> AntiDeepfake<span style="color:#a855f7">AI</span></a>
+      <a href="../index.html" class="brand">
+        <svg class="mark" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M16 2L4 7v8c0 7 5 12 12 15 7-3 12-8 12-15V7L16 2z" fill="#121b30" stroke="#2f6bff" stroke-width="1.6"/>
+          <path d="M10 16l4 4 8-9" stroke="#19b8a6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>AntiDeepfake<small>Console</small></span>
+      </a>
+      <div class="nav-group-label">Workspace</div>
       <nav class="side-nav">
-        <a href="index.html">📊 Dashboard</a>
-        <a href="scanner.html" class="active">🔍 Scanner</a>
-        <a href="results.html">📋 Results</a>
-        <a href="api-docs.html">🔌 API Docs</a>
+        <a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg> Dashboard</a>
+        <a href="scanner.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg> New analysis</a>
+        <a href="history.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 109-9 9 9 0 00-7 3.3M3 4v4h4" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 8v4l3 2" stroke-linecap="round"/></svg> History</a>
+      </nav>
+      <div class="nav-group-label">Developer</div>
+      <nav class="side-nav">
+        <a href="api-docs.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 9l-4 3 4 3M16 9l4 3-4 3M13 5l-2 14" stroke-linecap="round" stroke-linejoin="round"/></svg> API &amp; keys</a>
+        <a href="settings.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 13a7.6 7.6 0 000-2l2-1.5-2-3.4-2.3 1a7 7 0 00-1.7-1l-.4-2.6h-4l-.4 2.6a7 7 0 00-1.7 1l-2.3-1-2 3.4 2 1.5a7.6 7.6 0 000 2l-2 1.5 2 3.4 2.3-1a7 7 0 001.7 1l.4 2.6h4l.4-2.6a7 7 0 001.7-1l2.3 1 2-3.4-2-1.5z"/></svg> Settings</a>
       </nav>
       <div class="side-foot">
-        <a href="../index.html">← Back to site</a>
-        <a href="../privacy-policy.html">Privacy</a>
-        <a href="../terms.html">Terms</a>
+        <a href="../index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M19 12H5M12 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round"/></svg> Back to site</a>
       </div>
     </aside>
 
     <div class="main">
       <div class="topbar">
-        <div style="display:flex;align-items:center;gap:12px;">
+        <div style="display:flex;align-items:center;gap:14px;">
           <button class="menu-btn" id="menuBtn">☰</button>
-          <h1>Scanner</h1>
+          <div class="crumbs"><span>Workspace</span><span class="sep">/</span><span class="here">New analysis</span></div>
         </div>
         <div class="user-chip" id="userChip"></div>
       </div>
 
       <div class="content">
-        <div class="banner hidden" id="offlineBanner">⚠️ Backend not reachable — running in <strong>demo mode</strong> with simulated results.</div>
-
-        <div class="card">
-          <h2>Upload an Image or Video</h2>
-          <p style="color:var(--text-dim);margin-bottom:18px;">Supported: JPEG, PNG, WebP, BMP · MP4, MOV, AVI, MKV, WebM. Max 100&nbsp;MB.</p>
-
-          <div class="dropzone" id="dropzone">
-            <div class="big">📤</div>
-            <p><strong>Drag &amp; drop</strong> your file here, or click to browse</p>
-            <input type="file" id="fileInput" accept="image/*,video/*" hidden />
-          </div>
-
-          <img id="preview" class="preview" style="display:none;" alt="preview" />
-
-          <div class="progress-wrap" id="progressWrap">
-            <div class="progress-bar"><span id="progressBar"></span></div>
-            <div class="progress-label" id="progressLabel">Uploading…</div>
-          </div>
+        <div class="page-head">
+          <h2>New analysis</h2>
+          <p>Upload media to run all eight forensic methods and produce a documented verdict.</p>
         </div>
 
-        <div class="card" style="margin-top:18px;">
-          <h3>What gets analyzed</h3>
-          <p style="color:var(--text-dim);">Every upload is run through all 8 detectors — face forgery, frequency analysis, liveness, temporal consistency, audio-visual sync, GAN fingerprinting, metadata forensics, and pixel forensics — then fused into one verdict. Sign in to save results to your history and download evidence reports.</p>
+        <div class="banner hidden" id="offlineBanner">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg>
+          <div>Backend not reachable — results below are <strong>simulated</strong> for demonstration. Sign in to a live backend for real analysis.</div>
+        </div>
+
+        <div class="results-layout">
+          <div class="card">
+            <div class="dropzone" id="dropzone">
+              <div class="big"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 16V4M7 9l5-5 5 5" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke-linecap="round"/></svg></div>
+              <h3>Drag &amp; drop, or click to browse</h3>
+              <p>We never share your media. Processing is for analysis only.</p>
+              <div class="formats">Images: JPEG · PNG · WebP · BMP &nbsp;|&nbsp; Video: MP4 · MOV · AVI · MKV · WebM</div>
+              <input type="file" id="fileInput" accept="image/*,video/*" style="display:none" />
+            </div>
+            <img class="preview" id="preview" style="display:none" alt="preview" />
+            <div class="progress-wrap" id="progressWrap">
+              <div class="progress-bar"><span id="progressBar"></span></div>
+              <div class="progress-label" id="progressLabel">Uploading…</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>What gets checked</h3>
+            <p class="card-sub">Eight independent methods run on every submission.</p>
+            <div style="display:flex;flex-direction:column;gap:9px;font-size:0.88rem;color:var(--text-soft)">
+              <span>· Facial manipulation analysis</span>
+              <span>· Frequency-domain inspection</span>
+              <span>· Presentation &amp; liveness</span>
+              <span>· Temporal consistency (video)</span>
+              <span>· Audio-visual sync (video)</span>
+              <span>· Generator fingerprinting</span>
+              <span>· Metadata forensics</span>
+              <span>· Pixel-level forensics</span>
+            </div>
+            <div class="hint" style="margin-top:14px;border-top:1px solid var(--line);padding-top:14px;">Video-only methods are skipped for still images and excluded from the score.</div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Auth modal -->
   <div class="modal-overlay" id="authModal">
     <div class="modal">
-      <h2>Welcome</h2>
-      <p class="sub">Sign in or create your AntiDeepfake AI account.</p>
+      <h2>Sign in</h2>
+      <p class="sub">Access your workspace, API key, and analysis history.</p>
       <div class="tabs">
-        <button id="tabRegister" class="active">Register</button>
+        <button id="tabRegister" class="active">Create account</button>
         <button id="tabLogin">Log in</button>
       </div>
       <form id="authForm">
-        <label for="authEmail">Email</label>
-        <input type="email" id="authEmail" required placeholder="you@example.com" />
+        <label for="authEmail">Work email</label>
+        <input type="email" id="authEmail" required placeholder="you@company.com" />
         <label for="authPassword">Password</label>
         <input type="password" id="authPassword" required minlength="8" placeholder="At least 8 characters" />
         <div class="err" id="authErr"></div>
-        <button type="submit" class="btn btn-primary" id="authSubmit" style="width:100%;margin-top:14px;">Create account</button>
+        <button type="submit" class="btn btn-primary" id="authSubmit" style="width:100%;margin-top:16px;">Create account</button>
       </form>
       <button class="btn btn-ghost" id="authClose" style="width:100%;margin-top:10px;">Cancel</button>
     </div>

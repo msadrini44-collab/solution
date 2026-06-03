@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Analysis result — AntiDeepfake</title>
+  <title>History — AntiDeepfake</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/app.css" />
@@ -22,7 +22,7 @@
       <nav class="side-nav">
         <a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg> Dashboard</a>
         <a href="scanner.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg> New analysis</a>
-        <a href="history.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 109-9 9 9 0 00-7 3.3M3 4v4h4" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 8v4l3 2" stroke-linecap="round"/></svg> History</a>
+        <a href="history.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 109-9 9 9 0 00-7 3.3M3 4v4h4" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 8v4l3 2" stroke-linecap="round"/></svg> History</a>
       </nav>
       <div class="nav-group-label">Developer</div>
       <nav class="side-nav">
@@ -38,58 +38,57 @@
       <div class="topbar">
         <div style="display:flex;align-items:center;gap:14px;">
           <button class="menu-btn" id="menuBtn">☰</button>
-          <div class="crumbs"><a href="history.html" style="color:inherit">History</a><span class="sep">/</span><span class="here">Result</span></div>
+          <div class="crumbs"><span>Workspace</span><span class="sep">/</span><span class="here">History</span></div>
         </div>
         <div class="user-chip" id="userChip"></div>
       </div>
 
       <div class="content">
-        <div class="page-head" style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;">
-          <div>
-            <h2 id="resTitle">Analysis result</h2>
-            <p id="resMeta"></p>
-          </div>
-          <div style="display:flex;gap:10px;">
-            <button class="btn btn-ghost btn-sm" id="downloadJson">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12M8 11l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
-              JSON report
-            </button>
-            <button class="btn btn-primary btn-sm" id="downloadPdf">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/></svg>
-              PDF report
-            </button>
-          </div>
+        <div class="page-head">
+          <h2>Analysis history</h2>
+          <p>Every analysis run on this account, with verdict and score.</p>
         </div>
 
-        <div class="results-layout">
-          <div style="display:flex;flex-direction:column;gap:18px;">
-            <div class="card">
-              <div style="display:flex;gap:28px;align-items:center;flex-wrap:wrap;justify-content:center;">
-                <div class="gauge-wrap">
-                  <div class="gauge" id="gauge"></div>
-                  <div class="verdict-pill" id="verdictPill"></div>
-                </div>
-                <div style="flex:1;min-width:220px;">
-                  <h3 style="margin-bottom:10px;">Authenticity assessment</h3>
-                  <p style="color:var(--text-soft);font-size:0.92rem;">A higher score indicates the media is more likely authentic. The verdict fuses all applicable methods with a calibrated ensemble; borderline results are reported as <em>inconclusive</em> rather than a forced label.</p>
-                </div>
-              </div>
-            </div>
+        <div class="banner hidden" id="offlineBanner">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg>
+          <div>Backend not reachable — showing locally cached analyses only.</div>
+        </div>
 
-            <div class="card">
-              <div class="card-head"><h3>Method breakdown</h3></div>
-              <div id="breakdown"></div>
+        <div class="card">
+          <div class="toolbar">
+            <div class="search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg>
+              <input type="text" id="historySearch" placeholder="Search by file name…" />
             </div>
-
-            <div class="card">
-              <div class="card-head"><h3>Visualizations</h3></div>
-              <div class="viz-grid" id="vizGrid"></div>
+            <div class="segmented" id="historyFilter">
+              <button class="active" data-filter="all">All</button>
+              <button data-filter="authentic">Authentic</button>
+              <button data-filter="inconclusive">Inconclusive</button>
+              <button data-filter="flagged">Flagged</button>
             </div>
+            <a href="scanner.html" class="btn btn-primary btn-sm">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+              New analysis
+            </a>
           </div>
 
-          <div class="card">
-            <div class="card-head"><h3>History</h3></div>
-            <div class="history-list" id="historyList"></div>
+          <div id="historyTableWrap">
+            <table class="data" id="historyTable">
+              <thead>
+                <tr>
+                  <th data-sort="filename">File</th>
+                  <th data-sort="media_type">Type</th>
+                  <th data-sort="verdict">Verdict</th>
+                  <th data-sort="score">Score</th>
+                  <th data-sort="created_at">Date</th>
+                </tr>
+              </thead>
+              <tbody id="historyBody"></tbody>
+            </table>
+            <div class="empty-state" id="historyEmpty" style="display:none;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 5h16v14H4z"/><path d="M4 10h16M9 14h6"/></svg>
+              <div>No analyses yet. <a href="scanner.html">Run your first analysis →</a></div>
+            </div>
           </div>
         </div>
       </div>

@@ -3,63 +3,80 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>API Docs — AntiDeepfake AI</title>
+  <title>API &amp; keys — AntiDeepfake</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/app.css" />
 </head>
 <body>
   <div class="app-shell">
     <aside class="sidebar" id="sidebar">
-      <a href="../index.html" class="brand"><span class="logo">🛡️</span> AntiDeepfake<span style="color:#a855f7">AI</span></a>
+      <a href="../index.html" class="brand">
+        <svg class="mark" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M16 2L4 7v8c0 7 5 12 12 15 7-3 12-8 12-15V7L16 2z" fill="#121b30" stroke="#2f6bff" stroke-width="1.6"/>
+          <path d="M10 16l4 4 8-9" stroke="#19b8a6" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>AntiDeepfake<small>Console</small></span>
+      </a>
+      <div class="nav-group-label">Workspace</div>
       <nav class="side-nav">
-        <a href="index.html">📊 Dashboard</a>
-        <a href="scanner.html">🔍 Scanner</a>
-        <a href="results.html">📋 Results</a>
-        <a href="api-docs.html" class="active">🔌 API Docs</a>
+        <a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg> Dashboard</a>
+        <a href="scanner.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg> New analysis</a>
+        <a href="history.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12a9 9 0 109-9 9 9 0 00-7 3.3M3 4v4h4" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 8v4l3 2" stroke-linecap="round"/></svg> History</a>
+      </nav>
+      <div class="nav-group-label">Developer</div>
+      <nav class="side-nav">
+        <a href="api-docs.html" class="active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 9l-4 3 4 3M16 9l4 3-4 3M13 5l-2 14" stroke-linecap="round" stroke-linejoin="round"/></svg> API &amp; keys</a>
+        <a href="settings.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 13a7.6 7.6 0 000-2l2-1.5-2-3.4-2.3 1a7 7 0 00-1.7-1l-.4-2.6h-4l-.4 2.6a7 7 0 00-1.7 1l-2.3-1-2 3.4 2 1.5a7.6 7.6 0 000 2l-2 1.5 2 3.4 2.3-1a7 7 0 001.7 1l.4 2.6h4l.4-2.6a7 7 0 001.7-1l2.3 1 2-3.4-2-1.5z"/></svg> Settings</a>
       </nav>
       <div class="side-foot">
-        <a href="../index.html">← Back to site</a>
-        <a href="../privacy-policy.html">Privacy</a>
-        <a href="../terms.html">Terms</a>
+        <a href="../index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M19 12H5M12 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round"/></svg> Back to site</a>
       </div>
     </aside>
 
     <div class="main">
       <div class="topbar">
-        <div style="display:flex;align-items:center;gap:12px;">
+        <div style="display:flex;align-items:center;gap:14px;">
           <button class="menu-btn" id="menuBtn">☰</button>
-          <h1>API Documentation</h1>
+          <div class="crumbs"><span>Developer</span><span class="sep">/</span><span class="here">API &amp; keys</span></div>
         </div>
         <div class="user-chip" id="userChip"></div>
       </div>
 
       <div class="content">
+        <div class="page-head">
+          <h2>API &amp; keys</h2>
+          <p>Authenticate requests and integrate verification into your own workflows.</p>
+        </div>
+
         <div class="card">
-          <h2>Authentication</h2>
-          <p style="color:var(--text-dim);">All detection endpoints accept either a <strong>JWT</strong> (<code>Authorization: Bearer &lt;token&gt;</code>) or your <strong>API key</strong> (<code>X-API-Key: &lt;key&gt;</code>). Your API key:</p>
-          <pre class="code-block"><code id="apiKeyDisplay">Sign in to view your API key</code></pre>
-          <p style="color:var(--text-dim);">Interactive Swagger UI is available at <code>&lt;API_BASE&gt;/docs</code>.</p>
+          <h3>Authentication</h3>
+          <p class="card-sub">All detection endpoints accept either a <strong>JWT</strong> (<code>Authorization: Bearer &lt;token&gt;</code>) or your <strong>API key</strong> (<code>X-API-Key: &lt;key&gt;</code>).</p>
+          <div class="kv">
+            <code id="apiKeyDisplay">Sign in to view your API key</code>
+            <button class="copy-btn" id="copyApiKey"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 012-2h10"/></svg> Copy</button>
+          </div>
+          <div class="hint">Interactive Swagger UI is available at <code>&lt;API_BASE&gt;/docs</code>.</div>
         </div>
 
         <div class="card" style="margin-top:18px;">
-          <h2>Endpoints</h2>
+          <h3>Endpoints</h3>
           <table class="api-table">
             <thead><tr><th>Method</th><th>Path</th><th>Description</th></tr></thead>
             <tbody>
-              <tr><td>POST</td><td><code>/api/auth/register</code></td><td>Create an account → returns JWT + API key</td></tr>
-              <tr><td>POST</td><td><code>/api/auth/login</code></td><td>Log in → returns JWT + API key</td></tr>
-              <tr><td>POST</td><td><code>/api/detect</code></td><td>Upload image/video, run 8-detector pipeline</td></tr>
-              <tr><td>GET</td><td><code>/api/results/{scan_id}</code></td><td>Fetch results for a scan</td></tr>
-              <tr><td>GET</td><td><code>/api/history</code></td><td>Scan history (auth required)</td></tr>
-              <tr><td>GET</td><td><code>/api/health</code></td><td>Service health check</td></tr>
+              <tr><td><span class="method post">POST</span></td><td><code>/api/auth/register</code></td><td>Create an account → returns JWT + API key</td></tr>
+              <tr><td><span class="method post">POST</span></td><td><code>/api/auth/login</code></td><td>Log in → returns JWT + API key</td></tr>
+              <tr><td><span class="method post">POST</span></td><td><code>/api/detect</code></td><td>Upload image/video, run 8-method pipeline</td></tr>
+              <tr><td><span class="method get">GET</span></td><td><code>/api/results/{scan_id}</code></td><td>Fetch results for an analysis</td></tr>
+              <tr><td><span class="method get">GET</span></td><td><code>/api/history</code></td><td>Analysis history (auth required)</td></tr>
+              <tr><td><span class="method get">GET</span></td><td><code>/api/health</code></td><td>Service health check</td></tr>
             </tbody>
           </table>
         </div>
 
         <div class="card" style="margin-top:18px;">
-          <h2>Run a detection (curl)</h2>
-          <p style="color:var(--text-dim);">Add <code>?sync=true</code> to get the result in the response; otherwise poll <code>/api/results/{scan_id}</code>.</p>
+          <h3>Run an analysis (curl)</h3>
+          <p class="card-sub">Add <code>?sync=true</code> to get the result in the response; otherwise poll <code>/api/results/{scan_id}</code>.</p>
           <pre class="code-block"><code># Synchronous scan
 curl -X POST "https://api.antideepfakeai.com/api/detect?sync=true" \
   -H "X-API-Key: adf_your_api_key_here" \
@@ -67,7 +84,7 @@ curl -X POST "https://api.antideepfakeai.com/api/detect?sync=true" \
         </div>
 
         <div class="card" style="margin-top:18px;">
-          <h2>Asynchronous scan + poll</h2>
+          <h3>Asynchronous analysis + poll</h3>
           <pre class="code-block"><code># 1) Submit
 SCAN=$(curl -s -X POST "https://api.antideepfakeai.com/api/detect" \
   -H "X-API-Key: adf_your_api_key_here" \
@@ -79,7 +96,7 @@ curl -s "https://api.antideepfakeai.com/api/results/$SCAN" \
         </div>
 
         <div class="card" style="margin-top:18px;">
-          <h2>Example response</h2>
+          <h3>Example response</h3>
           <pre class="code-block"><code>{
   "scan_id": "f1c2...",
   "status": "done",
@@ -99,7 +116,7 @@ curl -s "https://api.antideepfakeai.com/api/results/$SCAN" \
         </div>
 
         <div class="card" style="margin-top:18px;">
-          <h2>Python example</h2>
+          <h3>Python example</h3>
           <pre class="code-block"><code>import requests
 
 API = "https://api.antideepfakeai.com"
@@ -118,8 +135,8 @@ for d in result["breakdown"]:
         </div>
 
         <div class="card" style="margin-top:18px;">
-          <h2>Rate limits &amp; formats</h2>
-          <ul style="color:var(--text-dim);padding-left:20px;">
+          <h3>Rate limits &amp; formats</h3>
+          <ul style="color:var(--text-soft);padding-left:20px;">
             <li>Max upload size: <strong>100&nbsp;MB</strong> (configurable server-side).</li>
             <li>Images: JPEG, PNG, WebP, BMP. Videos: MP4, MOV, AVI, MKV, WebM.</li>
             <li>Fair-use rate limits apply per API key; contact support for higher limits.</li>
@@ -132,15 +149,15 @@ for d in result["breakdown"]:
 
   <div class="modal-overlay" id="authModal">
     <div class="modal">
-      <h2>Welcome</h2>
-      <p class="sub">Sign in or create your AntiDeepfake AI account.</p>
+      <h2>Sign in</h2>
+      <p class="sub">Access your workspace, API key, and analysis history.</p>
       <div class="tabs">
-        <button id="tabRegister" class="active">Register</button>
+        <button id="tabRegister" class="active">Create account</button>
         <button id="tabLogin">Log in</button>
       </div>
       <form id="authForm">
-        <label for="authEmail">Email</label>
-        <input type="email" id="authEmail" required placeholder="you@example.com" />
+        <label for="authEmail">Work email</label>
+        <input type="email" id="authEmail" required placeholder="you@company.com" />
         <label for="authPassword">Password</label>
         <input type="password" id="authPassword" required minlength="8" placeholder="At least 8 characters" />
         <div class="err" id="authErr"></div>
