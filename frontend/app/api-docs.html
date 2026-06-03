@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API Docs — AntiDeepfake AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <a href="../index.html" class="brand"><span class="logo">🛡️</span> AntiDeepfake<span style="color:#a855f7">AI</span></a>
+      <nav class="side-nav">
+        <a href="index.html">📊 Dashboard</a>
+        <a href="scanner.html">🔍 Scanner</a>
+        <a href="results.html">📋 Results</a>
+        <a href="api-docs.html" class="active">🔌 API Docs</a>
+      </nav>
+      <div class="side-foot">
+        <a href="../index.html">← Back to site</a>
+        <a href="../privacy-policy.html">Privacy</a>
+        <a href="../terms.html">Terms</a>
+      </div>
+    </aside>
+
+    <div class="main">
+      <div class="topbar">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <button class="menu-btn" id="menuBtn">☰</button>
+          <h1>API Documentation</h1>
+        </div>
+        <div class="user-chip" id="userChip"></div>
+      </div>
+
+      <div class="content">
+        <div class="card">
+          <h2>Authentication</h2>
+          <p style="color:var(--text-dim);">All detection endpoints accept either a <strong>JWT</strong> (<code>Authorization: Bearer &lt;token&gt;</code>) or your <strong>API key</strong> (<code>X-API-Key: &lt;key&gt;</code>). Your API key:</p>
+          <pre class="code-block"><code id="apiKeyDisplay">Sign in to view your API key</code></pre>
+          <p style="color:var(--text-dim);">Interactive Swagger UI is available at <code>&lt;API_BASE&gt;/docs</code>.</p>
+        </div>
+
+        <div class="card" style="margin-top:18px;">
+          <h2>Endpoints</h2>
+          <table class="api-table">
+            <thead><tr><th>Method</th><th>Path</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td>POST</td><td><code>/api/auth/register</code></td><td>Create an account → returns JWT + API key</td></tr>
+              <tr><td>POST</td><td><code>/api/auth/login</code></td><td>Log in → returns JWT + API key</td></tr>
+              <tr><td>POST</td><td><code>/api/detect</code></td><td>Upload image/video, run 8-detector pipeline</td></tr>
+              <tr><td>GET</td><td><code>/api/results/{scan_id}</code></td><td>Fetch results for a scan</td></tr>
+              <tr><td>GET</td><td><code>/api/history</code></td><td>Scan history (auth required)</td></tr>
+              <tr><td>GET</td><td><code>/api/health</code></td><td>Service health check</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card" style="margin-top:18px;">
+          <h2>Run a detection (curl)</h2>
+          <p style="color:var(--text-dim);">Add <code>?sync=true</code> to get the result in the response; otherwise poll <code>/api/results/{scan_id}</code>.</p>
+          <pre class="code-block"><code># Synchronous scan
+curl -X POST "https://api.antideepfakeai.com/api/detect?sync=true" \
+  -H "X-API-Key: adf_your_api_key_here" \
+  -F "file=@/path/to/photo.jpg"</code></pre>
+        </div>
+
+        <div class="card" style="margin-top:18px;">
+          <h2>Asynchronous scan + poll</h2>
+          <pre class="code-block"><code># 1) Submit
+SCAN=$(curl -s -X POST "https://api.antideepfakeai.com/api/detect" \
+  -H "X-API-Key: adf_your_api_key_here" \
+  -F "file=@/path/to/clip.mp4" | jq -r .scan_id)
+
+# 2) Poll until status == "done"
+curl -s "https://api.antideepfakeai.com/api/results/$SCAN" \
+  -H "X-API-Key: adf_your_api_key_here" | jq</code></pre>
+        </div>
+
+        <div class="card" style="margin-top:18px;">
+          <h2>Example response</h2>
+          <pre class="code-block"><code>{
+  "scan_id": "f1c2...",
+  "status": "done",
+  "filename": "photo.jpg",
+  "media_type": "image",
+  "score": 23.5,
+  "verdict": "LIKELY FAKE",
+  "processing_time_sec": 1.8,
+  "breakdown": [
+    { "name": "face_forgery",     "score": 12.0, "status": "ok",       "fake_probability": 0.88, "summary": "..." },
+    { "name": "frequency_analysis","score": 30.1, "status": "ok",       "fake_probability": 0.70, "summary": "..." },
+    { "name": "gan_fingerprint",  "score": 18.0, "status": "ok",       "fake_probability": 0.82, "summary": "...", "details": {"predicted_source": "Stable Diffusion"} }
+    /* ...all 8 detectors... */
+  ],
+  "artifacts": { "report_json": "...", "report_pdf": "...", "heatmap": "...", "spectrum": "..." }
+}</code></pre>
+        </div>
+
+        <div class="card" style="margin-top:18px;">
+          <h2>Python example</h2>
+          <pre class="code-block"><code>import requests
+
+API = "https://api.antideepfakeai.com"
+KEY = "adf_your_api_key_here"
+
+with open("photo.jpg", "rb") as f:
+    r = requests.post(
+        f"{API}/api/detect?sync=true",
+        headers={"X-API-Key": KEY},
+        files={"file": f},
+    )
+result = r.json()
+print(result["verdict"], result["score"])
+for d in result["breakdown"]:
+    print(d["name"], d["score"], d["status"])</code></pre>
+        </div>
+
+        <div class="card" style="margin-top:18px;">
+          <h2>Rate limits &amp; formats</h2>
+          <ul style="color:var(--text-dim);padding-left:20px;">
+            <li>Max upload size: <strong>100&nbsp;MB</strong> (configurable server-side).</li>
+            <li>Images: JPEG, PNG, WebP, BMP. Videos: MP4, MOV, AVI, MKV, WebM.</li>
+            <li>Fair-use rate limits apply per API key; contact support for higher limits.</li>
+            <li>Videos are analyzed via frame sampling for fast turnaround.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="authModal">
+    <div class="modal">
+      <h2>Welcome</h2>
+      <p class="sub">Sign in or create your AntiDeepfake AI account.</p>
+      <div class="tabs">
+        <button id="tabRegister" class="active">Register</button>
+        <button id="tabLogin">Log in</button>
+      </div>
+      <form id="authForm">
+        <label for="authEmail">Email</label>
+        <input type="email" id="authEmail" required placeholder="you@example.com" />
+        <label for="authPassword">Password</label>
+        <input type="password" id="authPassword" required minlength="8" placeholder="At least 8 characters" />
+        <div class="err" id="authErr"></div>
+        <button type="submit" class="btn btn-primary" id="authSubmit" style="width:100%;margin-top:14px;">Create account</button>
+      </form>
+      <button class="btn btn-ghost" id="authClose" style="width:100%;margin-top:10px;">Cancel</button>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scanner — AntiDeepfake AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <a href="../index.html" class="brand"><span class="logo">🛡️</span> AntiDeepfake<span style="color:#a855f7">AI</span></a>
+      <nav class="side-nav">
+        <a href="index.html">📊 Dashboard</a>
+        <a href="scanner.html" class="active">🔍 Scanner</a>
+        <a href="results.html">📋 Results</a>
+        <a href="api-docs.html">🔌 API Docs</a>
+      </nav>
+      <div class="side-foot">
+        <a href="../index.html">← Back to site</a>
+        <a href="../privacy-policy.html">Privacy</a>
+        <a href="../terms.html">Terms</a>
+      </div>
+    </aside>
+
+    <div class="main">
+      <div class="topbar">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <button class="menu-btn" id="menuBtn">☰</button>
+          <h1>Scanner</h1>
+        </div>
+        <div class="user-chip" id="userChip"></div>
+      </div>
+
+      <div class="content">
+        <div class="banner hidden" id="offlineBanner">⚠️ Backend not reachable — running in <strong>demo mode</strong> with simulated results.</div>
+
+        <div class="card">
+          <h2>Upload an Image or Video</h2>
+          <p style="color:var(--text-dim);margin-bottom:18px;">Supported: JPEG, PNG, WebP, BMP · MP4, MOV, AVI, MKV, WebM. Max 100&nbsp;MB.</p>
+
+          <div class="dropzone" id="dropzone">
+            <div class="big">📤</div>
+            <p><strong>Drag &amp; drop</strong> your file here, or click to browse</p>
+            <input type="file" id="fileInput" accept="image/*,video/*" hidden />
+          </div>
+
+          <img id="preview" class="preview" style="display:none;" alt="preview" />
+
+          <div class="progress-wrap" id="progressWrap">
+            <div class="progress-bar"><span id="progressBar"></span></div>
+            <div class="progress-label" id="progressLabel">Uploading…</div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:18px;">
+          <h3>What gets analyzed</h3>
+          <p style="color:var(--text-dim);">Every upload is run through all 8 detectors — face forgery, frequency analysis, liveness, temporal consistency, audio-visual sync, GAN fingerprinting, metadata forensics, and pixel forensics — then fused into one verdict. Sign in to save results to your history and download evidence reports.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Auth modal -->
+  <div class="modal-overlay" id="authModal">
+    <div class="modal">
+      <h2>Welcome</h2>
+      <p class="sub">Sign in or create your AntiDeepfake AI account.</p>
+      <div class="tabs">
+        <button id="tabRegister" class="active">Register</button>
+        <button id="tabLogin">Log in</button>
+      </div>
+      <form id="authForm">
+        <label for="authEmail">Email</label>
+        <input type="email" id="authEmail" required placeholder="you@example.com" />
+        <label for="authPassword">Password</label>
+        <input type="password" id="authPassword" required minlength="8" placeholder="At least 8 characters" />
+        <div class="err" id="authErr"></div>
+        <button type="submit" class="btn btn-primary" id="authSubmit" style="width:100%;margin-top:14px;">Create account</button>
+      </form>
+      <button class="btn btn-ghost" id="authClose" style="width:100%;margin-top:10px;">Cancel</button>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
