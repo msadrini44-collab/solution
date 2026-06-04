@@ -78,6 +78,7 @@ JWT_EXPIRE_MINUTES = _env_int("ADF_JWT_EXPIRE_MINUTES", 60 * 24 * 7)  # 1 week
 # --------------------------------------------------------------------------- #
 MAX_UPLOAD_MB = _env_int("ADF_MAX_UPLOAD_MB", 100)
 MAX_UPLOAD_BYTES = MAX_UPLOAD_MB * 1024 * 1024
+TRIAL_FREE_SCANS_PER_IP = _env_int("ADF_TRIAL_FREE_SCANS_PER_IP", 1)
 
 SUPPORTED_IMAGE_FORMATS = _env_list(
     "ADF_IMAGE_FORMATS", ["jpg", "jpeg", "png", "webp", "bmp"]

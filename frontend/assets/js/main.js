@@ -7,6 +7,28 @@
 (function () {
   "use strict";
 
+  function defaultApiBase() {
+    if (/(\.|^)antideepfakeai\.com$/i.test(location.hostname)) {
+      return "https://api.antideepfakeai.com";
+    }
+    return "http://localhost:8000";
+  }
+
+  var API_BASE = localStorage.getItem("adf_api_base") || defaultApiBase();
+
+  function escapeHtml(value) {
+    return String(value == null ? "" : value).replace(/[&<>"']/g, function (ch) {
+      return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[ch];
+    });
+  }
+
+  function handleJson(resp) {
+    return resp.json().catch(function () { return {}; }).then(function (data) {
+      if (!resp.ok) throw new Error(data.detail || "The scan could not be completed.");
+      return data;
+    });
+  }
+
   /* ---------- Mobile nav ---------- */
   var navToggle = document.getElementById("navToggle");
   var navLinks = document.getElementById("navLinks");
@@ -19,6 +41,47 @@
       a.addEventListener("click", function () {
         navLinks.classList.remove("open");
       });
+    });
+  }
+
+  /* ---------- One free landing-page scan ---------- */
+  var trialForm = document.getElementById("trialForm");
+  if (trialForm) {
+    var trialFile = document.getElementById("trialFile");
+    var trialStatus = document.getElementById("trialStatus");
+    var trialResult = document.getElementById("trialResult");
+
+    trialForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (!trialFile.files.length) return;
+      var file = trialFile.files[0];
+      var body = new FormData();
+      body.append("file", file);
+
+      trialStatus.textContent = "Uploading and analyzing with the production backend…";
+      trialResult.classList.add("hidden");
+      trialForm.querySelector("button").disabled = true;
+
+      fetch(API_BASE + "/api/trial/detect", { method: "POST", body: body })
+        .then(handleJson)
+        .then(function (res) {
+          var score = res.score == null ? "—" : Math.round(res.score);
+          var notes = (res.decision_notes || []).slice(0, 2).map(escapeHtml).join("<br>");
+          trialStatus.textContent = "Analysis complete.";
+          trialResult.innerHTML =
+            '<div class="verdict-line"><strong>' + escapeHtml(res.verdict || "Result ready") + '</strong><span class="score">' + score + "/100</span></div>" +
+            '<p class="small">Evidence grade: ' + escapeHtml(res.evidence_grade || "review") + " · Detectors used: " + escapeHtml(res.detectors_used || "—") + "</p>" +
+            (notes ? '<p class="small" style="margin-top:10px;">' + notes + "</p>" : "") +
+            '<p class="small" style="margin-top:12px;">Create an account to keep history, download reports, and run more scans.</p>' +
+            '<a class="btn btn-ghost" style="margin-top:14px;" href="app/index.html">Create account / log in</a>';
+          trialResult.classList.remove("hidden");
+        })
+        .catch(function (err) {
+          trialStatus.textContent = err.message;
+        })
+        .finally(function () {
+          trialForm.querySelector("button").disabled = false;
+        });
     });
   }
 

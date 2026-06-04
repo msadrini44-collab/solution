@@ -228,8 +228,8 @@ Full reference with Python examples lives in `frontend/app/api-docs.html`.
 ## Connecting Digistore24
 
 1. Create your product in Digistore24 and copy its **product ID**.
-2. In `frontend/index.html`, replace **`YOURPRODUCTID`** in the buy links:
-   `https://www.digistore24.com/product/YOURPRODUCTID`.
+2. The live checkout link is configured as
+   `https://www.checkout-ds24.com/product/693637`.
 3. Set the buyer **thank-you / success URL** in Digistore24 to your hosted
    `frontend/thank-you.html`.
 4. Replace the placeholder **trust/footer badges** with the official Digistore24

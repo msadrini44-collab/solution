@@ -6,12 +6,12 @@
 
 :root {
   /* Surfaces */
-  --ink: #0a0f1c;          /* page background */
-  --ink-2: #0e1526;        /* alt sections */
-  --surface: #121b30;      /* cards */
-  --surface-2: #16203a;    /* raised */
-  --line: #1f2c45;         /* hairline borders */
-  --line-strong: #2a3a59;
+  --ink: #080b11;          /* page background */
+  --ink-2: #10141c;        /* alt sections */
+  --surface: #151a23;      /* cards */
+  --surface-2: #1c2430;    /* raised */
+  --line: #27303d;         /* hairline borders */
+  --line-strong: #3b4656;
 
   /* Text */
   --text: #e9eef7;
@@ -19,10 +19,10 @@
   --text-dim: #7d89a3;
 
   /* Brand — restrained corporate blue + supporting teal */
-  --brand: #2f6bff;
-  --brand-strong: #1f51d6;
-  --brand-soft: rgba(47, 107, 255, 0.12);
-  --accent: #19b8a6;       /* teal, used sparingly for "verified" */
+  --brand: #d7ad62;
+  --brand-strong: #b98d43;
+  --brand-soft: rgba(215, 173, 98, 0.13);
+  --accent: #57d6c2;       /* teal, used sparingly for "verified" */
 
   /* Status */
   --ok: #2bb673;
@@ -45,7 +45,9 @@ html { scroll-behavior: smooth; }
 
 body {
   font-family: var(--font);
-  background: var(--ink);
+  background:
+    linear-gradient(180deg, rgba(215, 173, 98, 0.045), transparent 320px),
+    var(--ink);
   color: var(--text);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
@@ -62,7 +64,7 @@ img, svg { display: block; max-width: 100%; }
 
 h1, h2, h3, h4 { line-height: 1.18; font-weight: 700; letter-spacing: -0.018em; color: #fff; }
 .section-head { max-width: 720px; margin: 0 auto 52px; text-align: center; }
-.section-head .kicker { display: inline-block; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--brand); margin-bottom: 14px; }
+.kicker { display: inline-block; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--brand); margin-bottom: 14px; }
 h2.section-title { font-size: clamp(1.7rem, 3.4vw, 2.4rem); margin-bottom: 14px; }
 .section-sub { color: var(--text-soft); font-size: 1.05rem; }
 .text-accent { color: var(--brand); }
@@ -76,7 +78,8 @@ h2.section-title { font-size: clamp(1.7rem, 3.4vw, 2.4rem); margin-bottom: 14px;
 }
 .btn:active { transform: translateY(1px); }
 .btn-primary { background: var(--brand); color: #fff; }
-.btn-primary:hover { background: var(--brand-strong); }
+.btn-primary { color: #120f08; }
+.btn-primary:hover { background: var(--brand-strong); color: #fff; }
 .btn-ghost { background: transparent; color: var(--text); border-color: var(--line-strong); }
 .btn-ghost:hover { border-color: var(--brand); color: #fff; }
 .btn-lg { padding: 15px 30px; font-size: 1.04rem; }
@@ -110,7 +113,7 @@ h2.section-title { font-size: clamp(1.7rem, 3.4vw, 2.4rem); margin-bottom: 14px;
 .hero::before {
   content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.6;
   background:
-    radial-gradient(620px 300px at 12% -5%, rgba(47, 107, 255, 0.16), transparent 70%),
+    radial-gradient(620px 300px at 12% -5%, rgba(215, 173, 98, 0.16), transparent 70%),
     radial-gradient(560px 280px at 92% 0%, rgba(25, 184, 166, 0.10), transparent 72%);
 }
 .hero-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 56px; align-items: center; position: relative; }
@@ -155,6 +158,26 @@ h2.section-title { font-size: clamp(1.7rem, 3.4vw, 2.4rem); margin-bottom: 14px;
 .logos p { text-align: center; color: var(--text-dim); font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 18px; }
 .logos-row { display: flex; flex-wrap: wrap; gap: 40px; justify-content: center; align-items: center; opacity: 0.78; }
 .logos-row span { font-weight: 700; font-size: 1.05rem; color: var(--text-soft); letter-spacing: -0.01em; }
+
+/* ---------- Trial scanner ---------- */
+.trial-section { background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent); }
+.trial-grid { display: grid; grid-template-columns: 0.95fr 1.05fr; gap: 34px; align-items: stretch; }
+.trial-points { list-style: none; margin-top: 24px; display: grid; gap: 12px; }
+.trial-points li { color: var(--text-soft); padding-left: 28px; position: relative; }
+.trial-points li::before { content: ""; position: absolute; left: 2px; top: 9px; width: 14px; height: 8px; border-left: 2px solid var(--accent); border-bottom: 2px solid var(--accent); transform: rotate(-45deg); }
+.trial-points code { color: #fff; background: var(--surface); border: 1px solid var(--line); padding: 2px 6px; border-radius: 6px; }
+.trial-card { background: var(--surface); border: 1px solid var(--line-strong); border-radius: 18px; padding: 28px; box-shadow: var(--shadow); }
+.trial-card form { display: grid; gap: 14px; }
+.trial-card label { color: #fff; font-weight: 700; }
+.trial-card input[type="file"] { width: 100%; background: var(--ink-2); border: 1px dashed var(--line-strong); border-radius: var(--radius); padding: 18px; color: var(--text-soft); }
+.trial-note { color: var(--text-dim); font-size: 0.84rem; }
+.trial-status { min-height: 24px; margin-top: 16px; color: var(--text-soft); }
+.trial-result { margin-top: 18px; border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; background: var(--ink-2); }
+.trial-result.hidden { display: none; }
+.trial-result .verdict-line { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin-bottom: 12px; }
+.trial-result .verdict-line strong { font-size: 1.2rem; color: #fff; }
+.trial-result .score { font-size: 2rem; font-weight: 800; color: var(--brand); font-variant-numeric: tabular-nums; }
+.trial-result .small { color: var(--text-dim); font-size: 0.84rem; }
 
 /* ---------- Stats ---------- */
 .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; }
@@ -263,6 +286,7 @@ table.compare tr:last-child td { border-bottom: none; }
 @media (max-width: 920px) {
   .hero-grid { grid-template-columns: 1fr; gap: 40px; }
   .hero-visual { order: -1; }
+  .trial-grid { grid-template-columns: 1fr; }
   .steps { grid-template-columns: 1fr; }
   .footer-grid { grid-template-columns: 1fr 1fr; }
   .pricing { grid-template-columns: 1fr; }

@@ -67,6 +67,15 @@ class Scan(Base):
         return json.loads(self.result_json) if self.result_json else None
 
 
+class TrialScan(Base):
+    __tablename__ = "trial_scans"
+
+    id = Column(Integer, primary_key=True)
+    ip_hash = Column(String(64), nullable=False, index=True)
+    scan_id = Column(String(36), nullable=False, index=True)
+    created_at = Column(DateTime, default=_dt.datetime.utcnow)
+
+
 def init_db() -> None:
     Base.metadata.create_all(bind=engine)
 

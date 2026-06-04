@@ -82,6 +82,7 @@ ADF_MODEL_DIR=/app/backend/weights
 ADF_DATA_DIR=/data
 ADF_STRICT_MODELS=1
 ADF_DEVICE=cpu
+ADF_TRIAL_FREE_SCANS_PER_IP=1
 ```
 
 Optional premium detector consensus:
@@ -94,26 +95,27 @@ PROVIDER_API_KEY=<provider-secret>
 
 Frontend:
 
-- Set the web app API base to `https://api.antideepfakeai.com` in
-  `frontend/app/js/app.js`, or run in the browser console after deployment:
-  `ADF.setApiBase("https://api.antideepfakeai.com")`.
-- Replace every `YOURPRODUCTID` Digistore24 checkout URL in
-  `frontend/index.html`.
+- The marketing site and app automatically use `https://api.antideepfakeai.com`
+  when loaded from `antideepfakeai.com`.
+- Digistore24 checkout is configured as
+  `https://www.checkout-ds24.com/product/693637`.
 
 ## Model and accuracy readiness
 
-- Obtain licensed FaceForensics++ weights and any commercial detector keys you
-  want to use.
+- Obtain licensed FaceForensics++ / Xception-style face-forgery weights,
+  generator-fingerprint weights, and any commercial detector keys you want to
+  use. This is required before making strong production accuracy claims.
 - Run `python scripts/download_models.py --url-face "<licensed-url>"` during
   deployment or bake weights into the backend image.
 - Keep `ADF_STRICT_MODELS=1` in production so missing model files fail loudly
   instead of silently falling back to heuristics.
-- Validate against a small gold set of known-real and known-fake media before
-  publishing accuracy claims.
+- Validate against a gold set of known-real and known-fake images/video before
+  publishing accuracy claims. No detector should be marketed as never missing;
+  position the system as high-confidence screening plus human review.
 
 ## SaaS/product hardening
 
-- Replace legal templates with lawyer-reviewed Privacy, Terms, and Refund pages.
+- Have counsel review the Privacy, Terms, Refund, About, and Contact pages.
 - Add a production email sender for account verification and password recovery.
 - Add rate limits and abuse protection on `/api/auth/*` and `/api/detect`.
 - Add server-side retention jobs for uploaded media and reports.

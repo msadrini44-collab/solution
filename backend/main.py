@@ -5,6 +5,7 @@ Endpoints
 ---------
 * ``POST /api/auth/register``      — create an account, returns JWT + API key.
 * ``POST /api/auth/login``         — log in, returns JWT + API key.
+* ``POST /api/trial/detect``       — one public synchronous scan per IP.
 * ``POST /api/detect``             — upload image/video, run detection pipeline.
 * ``GET  /api/results/{scan_id}``  — fetch results for a completed scan.
 * ``GET  /api/history``            — scan history for the authenticated user.
@@ -18,6 +19,7 @@ are associated with the user when credentials are supplied.
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 import shutil
 import uuid
@@ -30,6 +32,7 @@ from fastapi import (
     FastAPI,
     File,
     HTTPException,
+    Request,
     UploadFile,
     status,
 )
@@ -37,7 +40,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 from . import auth, config, pipeline
-from .database import Scan, User, get_session, init_db
+from .database import Scan, TrialScan, User, get_session, init_db
 from .schemas import (
     AuthResponse,
     DetectResponse,
@@ -114,6 +117,20 @@ def login(req: LoginRequest, db: Session = Depends(get_session)):
 # --------------------------------------------------------------------------- #
 # Detection
 # --------------------------------------------------------------------------- #
+def _client_ip(request: Request) -> str:
+    forwarded = request.headers.get("x-forwarded-for", "")
+    if forwarded:
+        return forwarded.split(",", 1)[0].strip()
+    if request.client:
+        return request.client.host
+    return "unknown"
+
+
+def _ip_hash(ip_address: str) -> str:
+    salt = config.JWT_SECRET.encode("utf-8")
+    return hashlib.sha256(salt + ip_address.encode("utf-8")).hexdigest()
+
+
 def _process_scan(scan_id: str, file_path: str, filename: str) -> None:
     """Background worker: run the pipeline and persist results."""
     from .database import SessionLocal
@@ -227,6 +244,32 @@ async def detect(
         filename=filename,
         media_type=media_type,
     )
+
+
+@app.post("/api/trial/detect", response_model=DetectResponse, tags=["detection"])
+async def trial_detect(
+    request: Request,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_session),
+):
+    ip_hash = _ip_hash(_client_ip(request))
+    used = db.query(TrialScan).filter(TrialScan.ip_hash == ip_hash).count()
+    if used >= config.TRIAL_FREE_SCANS_PER_IP:
+        raise HTTPException(
+            status_code=429,
+            detail="Free analysis already used from this network. Create an account to continue.",
+        )
+
+    response = await detect(
+        background_tasks=BackgroundTasks(),
+        file=file,
+        sync=True,
+        db=db,
+        user=None,
+    )
+    db.add(TrialScan(ip_hash=ip_hash, scan_id=response.scan_id))
+    db.commit()
+    return response
 
 
 @app.get("/api/results/{scan_id}", response_model=DetectResponse, tags=["detection"])
