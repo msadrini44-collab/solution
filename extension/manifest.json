@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "AntiDeepfake AI — Deepfake Detector",
   "version": "1.0.0",
-  "description": "Right-click any image on the web and check it for deepfakes / AI generation with AntiDeepfake AI's 8-layer detection engine.",
+  "description": "Right-click any image on the web and check it for deepfakes or AI generation with AntiDeepfake AI.",
   "permissions": ["contextMenus", "storage", "activeTab", "scripting"],
   "host_permissions": ["<all_urls>"],
   "background": {

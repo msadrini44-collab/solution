@@ -30,7 +30,17 @@ class DetectResponse(BaseModel):
     media_type: Optional[str] = None
     # Present immediately when processed synchronously.
     score: Optional[float] = None
+    fake_probability: Optional[float] = None
     verdict: Optional[str] = None
+    verdict_confidence: Optional[float] = None
+    detectors_used: Optional[int] = None
+    num_detectors_contributing: Optional[int] = None
+    evidence_grade: Optional[str] = None
+    risk_band: Optional[str] = None
+    decision_notes: Optional[List[str]] = None
+    recommended_action: Optional[str] = None
+    premium_signals_available: Optional[bool] = None
+    file_sha256: Optional[str] = None
     breakdown: Optional[List[Dict[str, Any]]] = None
     processing_time_sec: Optional[float] = None
     artifacts: Optional[Dict[str, str]] = None

@@ -46,16 +46,26 @@ def _top_regions(heat: np.ndarray, k: int = 3, block: int = 32) -> List[List[int
     """Return up to k high-anomaly [x, y, w, h] blocks from a heatmap."""
     h, w = heat.shape
     regions = []
-    bh, bw = h // block or 1, w // block or 1
+    block = max(8, min(block, h, w))
     scores = []
-    for by in range(0, h - block, block):
-        for bx in range(0, w - block, block):
+    for by in range(0, max(h - block + 1, 1), block):
+        for bx in range(0, max(w - block + 1, 1), block):
             patch = heat[by:by + block, bx:bx + block]
             scores.append((float(patch.mean()), bx, by))
     scores.sort(reverse=True)
     for s, bx, by in scores[:k]:
         regions.append([int(bx), int(by), block, block])
     return regions
+
+
+def _high_pass(gray: np.ndarray) -> np.ndarray:
+    pad = np.pad(gray, 1, mode="reflect")
+    blur = (
+        pad[:-2, :-2] + pad[:-2, 1:-1] + pad[:-2, 2:]
+        + pad[1:-1, :-2] + pad[1:-1, 1:-1] + pad[1:-1, 2:]
+        + pad[2:, :-2] + pad[2:, 1:-1] + pad[2:, 2:]
+    ) / 9.0
+    return gray - blur
 
 
 def run(
@@ -90,8 +100,7 @@ def run(
         for ty in range(0, h - th, th):
             for tx in range(0, w - tw, tw):
                 tile = gray[ty:ty + th, tx:tx + tw]
-                # High-pass residual std as a local noise estimate.
-                hp = tile - np.pad(tile, 1, mode="reflect")[1:-1, 1:-1]
+                hp = _high_pass(tile)
                 tile_noise.append(float(np.std(hp)))
         noise_inconsistency = float(np.std(tile_noise) / (np.mean(tile_noise) + 1e-6)) if tile_noise else 0.0
 

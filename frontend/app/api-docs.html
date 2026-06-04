@@ -102,14 +102,19 @@ curl -s "https://api.antideepfakeai.com/api/results/$SCAN" \
   "status": "done",
   "filename": "photo.jpg",
   "media_type": "image",
+  "file_sha256": "b9c4...",
   "score": 23.5,
+  "fake_probability": 0.765,
   "verdict": "LIKELY FAKE",
+  "verdict_confidence": 46.0,
+  "evidence_grade": "strong",
+  "recommended_action": "Escalate to manual forensic review.",
   "processing_time_sec": 1.8,
   "breakdown": [
     { "name": "face_forgery",     "score": 12.0, "status": "ok",       "fake_probability": 0.88, "summary": "..." },
     { "name": "frequency_analysis","score": 30.1, "status": "ok",       "fake_probability": 0.70, "summary": "..." },
     { "name": "gan_fingerprint",  "score": 18.0, "status": "ok",       "fake_probability": 0.82, "summary": "...", "details": {"predicted_source": "Stable Diffusion"} }
-    /* ...all 8 detectors... */
+    /* ...core detectors plus optional premium_consensus... */
   ],
   "artifacts": { "report_json": "...", "report_pdf": "...", "heatmap": "...", "spectrum": "..." }
 }</code></pre>

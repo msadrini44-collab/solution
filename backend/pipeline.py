@@ -9,6 +9,7 @@ Frame sampling keeps video processing bounded: one frame every
 """
 from __future__ import annotations
 
+import hashlib
 import time
 from pathlib import Path
 from typing import List, Optional
@@ -24,6 +25,7 @@ from .models import (
     liveness,
     metadata_forensics,
     pixel_forensics,
+    premium_consensus,
     temporal_analysis,
 )
 
@@ -37,7 +39,16 @@ _DETECTORS = [
     gan_fingerprint,
     metadata_forensics,
     pixel_forensics,
+    premium_consensus,
 ]
+
+
+def _sha256_file(path: str) -> str:
+    digest = hashlib.sha256()
+    with open(path, "rb") as fh:
+        for chunk in iter(lambda: fh.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def media_type_for(filename: str) -> Optional[str]:
@@ -97,6 +108,12 @@ def run_pipeline(scan_id: str, file_path: str, filename: str) -> dict:
         if r.name == pixel_forensics.NAME:
             regions = r.regions
 
+    aggregate["scan_id"] = scan_id
+    aggregate["filename"] = filename
+    aggregate["media_type"] = media_type
+    aggregate["processing_time_sec"] = round(time.time() - started, 2)
+    aggregate["file_sha256"] = _sha256_file(file_path)
+
     report = report_generator.build_report(scan_id, filename, media_type, aggregate)
     report_generator.save_json(report)
 
@@ -104,10 +121,6 @@ def run_pipeline(scan_id: str, file_path: str, filename: str) -> dict:
     artifacts = report_generator.render_visualizations(scan_id, image_for_viz, regions)
     pdf = report_generator.export_pdf(report, artifacts)
 
-    aggregate["scan_id"] = scan_id
-    aggregate["filename"] = filename
-    aggregate["media_type"] = media_type
-    aggregate["processing_time_sec"] = round(time.time() - started, 2)
     aggregate["artifacts"] = {
         **artifacts,
         "report_json": str(config.REPORT_DIR / f"{scan_id}.json"),

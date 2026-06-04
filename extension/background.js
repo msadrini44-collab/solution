@@ -4,7 +4,7 @@
    - Streams a quick result back to the content script for an on-page overlay.
 */
 
-const DEFAULT_API_BASE = "http://localhost:8000";
+const DEFAULT_API_BASE = "https://api.antideepfakeai.com";
 
 // Read the configured API base + key from storage (set in the popup).
 async function getConfig() {
@@ -16,7 +16,7 @@ async function getConfig() {
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
     id: "adf-check-image",
-    title: "🛡️ Check for deepfake",
+    title: "Check for deepfake",
     contexts: ["image"],
   });
 });

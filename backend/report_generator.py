@@ -26,12 +26,18 @@ def build_report(scan_id: str, filename: str, media_type: str,
         "scan_id": scan_id,
         "filename": filename,
         "media_type": media_type,
+        "file_sha256": aggregate_result.get("file_sha256"),
         "generated_at": _dt.datetime.utcnow().isoformat() + "Z",
         "overall": {
             "score": aggregate_result["score"],
             "verdict": aggregate_result["verdict"],
             "verdict_confidence": aggregate_result["verdict_confidence"],
             "fake_probability": aggregate_result["fake_probability"],
+            "evidence_grade": aggregate_result.get("evidence_grade"),
+            "risk_band": aggregate_result.get("risk_band"),
+            "decision_notes": aggregate_result.get("decision_notes", []),
+            "recommended_action": aggregate_result.get("recommended_action"),
+            "premium_signals_available": aggregate_result.get("premium_signals_available"),
         },
         "detectors": aggregate_result["breakdown"],
         "engine": {
@@ -120,6 +126,8 @@ def export_pdf(report: Dict, artifacts: Dict[str, str]) -> Optional[Path]:
         f"Verdict: {report['overall']['verdict']}  "
         f"(score {report['overall']['score']}/100, "
         f"confidence {report['overall']['verdict_confidence']}%)",
+        f"Evidence grade: {report['overall'].get('evidence_grade') or 'standard'}",
+        f"Recommended action: {report['overall'].get('recommended_action') or 'Review report'}",
     ]:
         c.drawString(inch, y, line)
         y -= 0.28 * inch

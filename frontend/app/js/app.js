@@ -5,7 +5,7 @@
      * API client (auth, detect, results, history) with graceful offline mode
      * Auth modal (register / login), JWT + API key persisted to localStorage
      * Scanner: drag & drop upload, progress, poll for results
-     * Results rendering: gauge, 8-detector breakdown, visualizations
+     * Results rendering: gauge, method breakdown, visualizations
      * History via API, with a localStorage cache fallback
      * SIMULATED results when the backend is unreachable (for demo / sales)
    ========================================================================== */
@@ -14,8 +14,15 @@
 
   // ----- Configuration -----------------------------------------------------
   // Point this at your deployed backend. Defaults to localhost for dev.
+  function defaultApiBase() {
+    if (/(\.|^)antideepfakeai\.com$/i.test(location.hostname)) {
+      return "https://api.antideepfakeai.com";
+    }
+    return "http://localhost:8000";
+  }
+
   var API_BASE =
-    localStorage.getItem("adf_api_base") || "http://localhost:8000";
+    localStorage.getItem("adf_api_base") || defaultApiBase();
 
   var DETECTOR_LABELS = {
     face_forgery: "Face Forgery",
@@ -26,6 +33,7 @@
     gan_fingerprint: "GAN Fingerprint",
     metadata_forensics: "Metadata Forensics",
     pixel_forensics: "Pixel Forensics",
+    premium_consensus: "Premium Provider Consensus",
   };
   var DETECTOR_ORDER = Object.keys(DETECTOR_LABELS);
 
@@ -35,6 +43,11 @@
   function token() { return localStorage.getItem("adf_token"); }
   function apiKey() { return localStorage.getItem("adf_api_key"); }
   function email() { return localStorage.getItem("adf_email"); }
+  function escapeHtml(value) {
+    return String(value == null ? "" : value).replace(/[&<>"']/g, function (ch) {
+      return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[ch];
+    });
+  }
 
   function authHeaders() {
     var h = {};
@@ -170,13 +183,14 @@
     var breakdown = DETECTOR_ORDER.map(function (name) {
       var applicable = true;
       if (!isVideo && (name === "temporal_analysis" || name === "audio_sync")) applicable = false;
+      if (name === "premium_consensus") applicable = false;
       var p = applicable ? Math.min(1, Math.max(0, fakeBias + (rng() - 0.5) * 0.4)) : 0.5;
       return {
         name: name,
         fake_probability: p,
         score: Math.round((1 - p) * 1000) / 10,
         status: applicable ? "ok" : "skipped",
-        summary: applicable ? "Simulated analysis (demo mode)." : "Not applicable to this media type.",
+        summary: applicable ? "Simulated analysis (demo mode)." : "Not applicable in demo mode.",
         contributed: applicable,
       };
     });
@@ -192,7 +206,16 @@
       filename: file.name,
       media_type: isVideo ? "video" : "image",
       score: score,
+      fake_probability: Math.round(avgP * 10000) / 10000,
       verdict: verdict,
+      verdict_confidence: Math.round(Math.abs(score - 50) / 50 * 1000) / 10,
+      detectors_used: used.length,
+      num_detectors_contributing: used.length,
+      evidence_grade: "demo",
+      risk_band: score < 40 ? "high" : score < 60 ? "review" : "low",
+      decision_notes: ["Demo-mode results are simulated. Run a signed-in scan against the live backend for evidence-grade analysis."],
+      recommended_action: "Use a live backend scan before making decisions.",
+      premium_signals_available: false,
       breakdown: breakdown,
       processing_time_sec: Math.round((1 + rng() * 4) * 10) / 10,
       simulated: true,
@@ -307,7 +330,7 @@
       if (runReal && API.online) {
         work = API.detect(file, onProgress).then(function (res) {
           bar.style.width = "100%";
-          label.textContent = "Analyzing with 8 detectors…";
+          label.textContent = "Analyzing with configured detectors…";
           return res;
         });
       } else {
@@ -334,6 +357,16 @@
           verdict: res.verdict,
           breakdown: res.breakdown,
           processing_time_sec: res.processing_time_sec,
+          fake_probability: res.fake_probability,
+          verdict_confidence: res.verdict_confidence,
+          detectors_used: res.detectors_used,
+          num_detectors_contributing: res.num_detectors_contributing,
+          evidence_grade: res.evidence_grade,
+          risk_band: res.risk_band,
+          decision_notes: res.decision_notes,
+          recommended_action: res.recommended_action,
+          premium_signals_available: res.premium_signals_available,
+          file_sha256: res.file_sha256,
           simulated: !!res.simulated,
           created_at: new Date().toISOString(),
         };
@@ -348,6 +381,11 @@
         pushLocalHistory({
           scan_id: res.scan_id, filename: res.filename, media_type: res.media_type,
           status: "done", score: res.score, verdict: res.verdict, breakdown: res.breakdown,
+          fake_probability: res.fake_probability, verdict_confidence: res.verdict_confidence,
+          detectors_used: res.detectors_used, evidence_grade: res.evidence_grade,
+          risk_band: res.risk_band, decision_notes: res.decision_notes,
+          recommended_action: res.recommended_action, premium_signals_available: false,
+          file_sha256: res.file_sha256,
           simulated: true, created_at: new Date().toISOString(),
         });
         setTimeout(function () { location.href = "results.html?scan=" + res.scan_id; }, 900);
@@ -381,13 +419,33 @@
       var row = document.createElement("div");
       row.className = "detector-row";
       row.innerHTML =
-        '<div class="d-name">' + (DETECTOR_LABELS[d.name] || d.name) + "</div>" +
+        '<div class="d-name">' + escapeHtml(DETECTOR_LABELS[d.name] || d.name) + "</div>" +
         '<div class="d-bar"><span style="width:' + s + "%;background:" + color(s) + '"></span></div>' +
         '<div class="d-score" style="color:' + color(s) + '">' + (d.status === "skipped" ? "—" : s) + "</div>" +
-        '<div class="d-status">' + d.status + "</div>" +
-        '<div class="d-summary">' + (d.summary || "") + "</div>";
+        '<div class="d-status">' + escapeHtml(d.status) + "</div>" +
+        '<div class="d-summary">' + escapeHtml(d.summary || "") + "</div>";
       host.appendChild(row);
     });
+  }
+
+  function renderDecisionSummary(res) {
+    function setText(id, value) {
+      var el = $("#" + id);
+      if (el) el.textContent = value == null || value === "" ? "—" : value;
+    }
+    setText("confidenceValue", res.verdict_confidence != null ? res.verdict_confidence + "%" : "—");
+    setText("evidenceGrade", res.evidence_grade || "standard");
+    setText("detectorsUsed", (res.detectors_used || res.num_detectors_contributing || 0) + " contributing");
+    setText("premiumStatus", res.premium_signals_available ? "Enabled" : "Not configured");
+    setText("recommendedAction", res.recommended_action || "Review the method breakdown and exported report.");
+
+    var notes = $("#decisionNotes");
+    if (notes) {
+      var items = res.decision_notes || [];
+      notes.innerHTML = items.length
+        ? items.map(function (n) { return "<li>" + escapeHtml(n) + "</li>"; }).join("")
+        : "<li>No contradictory detector signals were reported.</li>";
+    }
   }
 
   function renderResult(res) {
@@ -395,11 +453,13 @@
     $("#resMeta").textContent =
       (res.media_type || "") +
       (res.processing_time_sec ? " · " + res.processing_time_sec + "s" : "") +
+      (res.file_sha256 ? " · SHA-256 " + res.file_sha256.slice(0, 12) + "…" : "") +
       (res.simulated ? " · DEMO MODE (simulated)" : "");
     renderGauge(Math.round(res.score));
     var vp = $("#verdictPill");
     vp.textContent = res.verdict;
     vp.className = "verdict-pill " + statusClass(res.score);
+    renderDecisionSummary(res);
     renderBreakdown(res.breakdown);
 
     // Visualizations (only when backend produced artifacts).
@@ -475,8 +535,8 @@
         var a = document.createElement("a");
         if (s.scan_id === activeId) a.style.borderColor = "var(--accent)";
         a.href = "results.html?scan=" + encodeURIComponent(s.scan_id);
-        a.innerHTML = "<div>" + (s.filename || s.scan_id) + "</div>" +
-          '<div class="h-verdict">' + (s.verdict || s.status || "") +
+        a.innerHTML = "<div>" + escapeHtml(s.filename || s.scan_id) + "</div>" +
+          '<div class="h-verdict">' + escapeHtml(s.verdict || s.status || "") +
           (s.score != null ? " · " + s.score : "") + "</div>";
         host.appendChild(a);
       });
@@ -511,8 +571,8 @@
         var a = document.createElement("a");
         a.href = "results.html?scan=" + encodeURIComponent(s.scan_id);
         a.className = "";
-        a.innerHTML = '<div class="detector-row"><div class="d-name">' + (s.filename || s.scan_id) +
-          '</div><div class="d-summary" style="padding-left:0">' + (s.verdict || s.status || "") +
+        a.innerHTML = '<div class="detector-row"><div class="d-name">' + escapeHtml(s.filename || s.scan_id) +
+          '</div><div class="d-summary" style="padding-left:0">' + escapeHtml(s.verdict || s.status || "") +
           (s.score != null ? " · score " + s.score : "") + "</div></div>";
         host.appendChild(a);
       });
@@ -634,11 +694,11 @@
         var tr = document.createElement("tr");
         tr.addEventListener("click", function () { location.href = "results.html?scan=" + encodeURIComponent(s.scan_id); });
         tr.innerHTML =
-          "<td>" + (s.filename || s.scan_id) + "</td>" +
-          "<td>" + (s.media_type || "—") + "</td>" +
-          '<td><span class="pill ' + cls + '">' + (s.verdict || s.status || "—") + "</span></td>" +
+          "<td>" + escapeHtml(s.filename || s.scan_id) + "</td>" +
+          "<td>" + escapeHtml(s.media_type || "—") + "</td>" +
+          '<td><span class="pill ' + cls + '">' + escapeHtml(s.verdict || s.status || "—") + "</span></td>" +
           '<td style="font-variant-numeric:tabular-nums;">' + (sc != null ? sc : "—") + "</td>" +
-          '<td style="color:var(--text-dim);">' + date + "</td>";
+          '<td style="color:var(--text-dim);">' + escapeHtml(date) + "</td>";
         body.appendChild(tr);
       });
     }

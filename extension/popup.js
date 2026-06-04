@@ -11,7 +11,7 @@
 
   // Load saved settings.
   chrome.storage.sync.get(["apiBase", "apiKey"], function (cfg) {
-    apiBaseEl.value = cfg.apiBase || "http://localhost:8000";
+    apiBaseEl.value = cfg.apiBase || "https://api.antideepfakeai.com";
     apiKeyEl.value = cfg.apiKey || "";
   });
 
@@ -20,7 +20,7 @@
     chrome.storage.sync.set(
       { apiBase: apiBaseEl.value.trim(), apiKey: apiKeyEl.value.trim() },
       function () {
-        savedEl.textContent = "Saved ✓";
+        savedEl.textContent = "Saved";
         setTimeout(function () { savedEl.textContent = ""; }, 2000);
       }
     );

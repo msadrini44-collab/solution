@@ -48,16 +48,16 @@ from .schemas import (
 
 app = FastAPI(
     title="AntiDeepfake AI",
-    description="8-layer deepfake & synthetic-media detection engine.",
+    description="Multi-method deepfake and synthetic-media detection engine.",
     version="1.0.0",
 )
 
-# CORS open by default so the static frontend (served from any origin / file://)
-# can call the API. Lock this down in production via a reverse proxy.
+# CORS defaults to open for local/static demos. In production set
+# ADF_CORS_ORIGINS="https://antideepfakeai.com,https://www.antideepfakeai.com".
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
+    allow_origins=config.CORS_ALLOW_ORIGINS,
+    allow_credentials=config.CORS_ALLOW_ORIGINS != ["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -137,6 +137,30 @@ def _process_scan(scan_id: str, file_path: str, filename: str) -> None:
         db.close()
 
 
+def _scan_response(scan: Scan, result: dict, filename: Optional[str] = None) -> DetectResponse:
+    return DetectResponse(
+        scan_id=scan.scan_id,
+        status=scan.status,
+        filename=filename or scan.filename,
+        media_type=scan.media_type,
+        score=result.get("score"),
+        fake_probability=result.get("fake_probability"),
+        verdict=result.get("verdict"),
+        verdict_confidence=result.get("verdict_confidence"),
+        detectors_used=result.get("detectors_used"),
+        num_detectors_contributing=result.get("num_detectors_contributing"),
+        evidence_grade=result.get("evidence_grade"),
+        risk_band=result.get("risk_band"),
+        decision_notes=result.get("decision_notes"),
+        recommended_action=result.get("recommended_action"),
+        premium_signals_available=result.get("premium_signals_available"),
+        file_sha256=result.get("file_sha256"),
+        breakdown=result.get("breakdown"),
+        processing_time_sec=result.get("processing_time_sec"),
+        artifacts=result.get("artifacts"),
+    )
+
+
 @app.post("/api/detect", response_model=DetectResponse, tags=["detection"])
 async def detect(
     background_tasks: BackgroundTasks,
@@ -193,17 +217,7 @@ async def detect(
         _process_scan(scan_id, str(dest), filename)
         db.refresh(scan)
         result = scan.result() or {}
-        return DetectResponse(
-            scan_id=scan_id,
-            status=scan.status,
-            filename=filename,
-            media_type=media_type,
-            score=result.get("score"),
-            verdict=result.get("verdict"),
-            breakdown=result.get("breakdown"),
-            processing_time_sec=result.get("processing_time_sec"),
-            artifacts=result.get("artifacts"),
-        )
+        return _scan_response(scan, result, filename)
 
     background_tasks.add_task(_process_scan, scan_id, str(dest), filename)
     return DetectResponse(
@@ -222,17 +236,7 @@ def get_results(scan_id: str, db: Session = Depends(get_session)):
     result = scan.result() or {}
     if scan.status == "error":
         raise HTTPException(status_code=500, detail=result.get("error", "Processing failed"))
-    return DetectResponse(
-        scan_id=scan.scan_id,
-        status=scan.status,
-        filename=scan.filename,
-        media_type=scan.media_type,
-        score=result.get("score"),
-        verdict=result.get("verdict"),
-        breakdown=result.get("breakdown"),
-        processing_time_sec=result.get("processing_time_sec"),
-        artifacts=result.get("artifacts"),
-    )
+    return _scan_response(scan, result)
 
 
 @app.get("/api/history", response_model=HistoryResponse, tags=["detection"])
@@ -265,7 +269,12 @@ def history(
 
 @app.get("/api/health", tags=["meta"])
 def health():
-    return {"status": "ok", "service": "antideepfake-ai", "version": app.version}
+    return {
+        "status": "ok",
+        "service": "antideepfake-ai",
+        "version": app.version,
+        "premium_provider_count": len(config.PREMIUM_PROVIDERS) if config.ENABLE_PAID_APIS else 0,
+    }
 
 
 @app.get("/", tags=["meta"])

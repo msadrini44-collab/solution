@@ -1,20 +1,23 @@
-# 🛡️ AntiDeepfake AI
+# AntiDeepfake AI
 
-**Detect deepfakes instantly with 8 independent layers of AI detection.**
+**Detect deepfakes instantly with 8 core forensic layers plus optional premium-provider consensus.**
 
 AntiDeepfake AI is a full-stack product for detecting deepfakes, face swaps, and
-AI-generated images & video. It combines **8 independent detectors** into a
-single ensemble verdict, ships with a high-converting sales page, a product web
+AI-generated images & video. It combines **8 independent core detectors** into a
+calibrated ensemble verdict, can fuse optional external premium detector
+providers, ships with a high-converting sales page, a product web
 app, a REST API, and a Chrome extension — all containerized for one-command
 deployment.
 
 ---
 
-## ✨ Features
+## Features
 
-- **8-layer detection engine** — face forgery, frequency analysis, liveness,
+- **8-layer core detection engine** — face forgery, frequency analysis, liveness,
   temporal consistency, audio-visual sync, GAN fingerprinting, metadata
   forensics, and pixel forensics, fused by a weighted ensemble.
+- **Premium detector consensus** — optional external provider hooks can add
+  another independent signal when provider API keys are configured.
 - **Images & video** — JPEG/PNG/WebP/BMP and MP4/MOV/AVI/MKV/WebM (frame-sampled).
 - **FastAPI backend** with JWT + API-key auth, async scanning, and Swagger docs.
 - **Evidence reports** — JSON + PDF with anomaly heatmaps and FFT spectrum plots.
@@ -25,7 +28,7 @@ deployment.
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```
                          ┌─────────────────────────────────────────────┐
@@ -41,7 +44,7 @@ deployment.
        │ tasks                            │ run_pipeline()
        ▼                                  ▼
 ┌──────────────┐              ┌────────────────────────────────────────────────────┐
-│ Celery worker│              │            8-Detector Ensemble (models/)           │
+│ Celery worker│              │             Detector Ensemble (models/)            │
 │ (scale-out)  │              │ face_forgery · frequency · liveness · temporal ·    │
 └──────────────┘              │ audio_sync · gan_fingerprint · metadata · pixel     │
                               └───────────────────────┬────────────────────────────┘
@@ -52,7 +55,7 @@ deployment.
 
 ---
 
-## 🧰 Tech Stack
+## Tech Stack
 
 | Layer        | Technology |
 |--------------|------------|
@@ -68,7 +71,7 @@ deployment.
 
 ---
 
-## 📁 File Structure
+## File Structure
 
 ```
 solution/
@@ -84,7 +87,7 @@ solution/
 │   ├── tasks.py                # Optional Celery task definitions
 │   ├── requirements.txt
 │   ├── Dockerfile
-│   └── models/                 # The 8 detectors
+│   └── models/                 # Core detectors + optional premium consensus
 │       ├── base.py             # DetectorResult contract + helpers
 │       ├── face_forgery.py     # 1. EfficientNet/Xception + MTCNN (FF++)
 │       ├── frequency_analysis.py # 2. FFT/DCT spectral artifacts
@@ -102,7 +105,7 @@ solution/
 │   └── app/                    # Product web app
 │       ├── index.html          # Dashboard
 │       ├── scanner.html        # Drag & drop upload
-│       ├── results.html        # Gauge + 8-detector breakdown + heatmaps
+│       ├── results.html        # Gauge + method breakdown + heatmaps
 │       ├── api-docs.html        # API reference w/ curl & Python examples
 │       └── css/app.css · js/app.js
 ├── extension/                  # Chrome extension (Manifest V3)
@@ -117,7 +120,7 @@ solution/
 
 ---
 
-## 🚀 Setup
+## Setup
 
 ### Option A — Docker (recommended)
 
@@ -155,7 +158,7 @@ uvicorn backend.main:app --reload      # http://localhost:8000/docs
 
 ---
 
-## 🧠 Pretrained Model Weights
+## Pretrained Model Weights
 
 Detectors that use neural networks (`face_forgery`, `gan_fingerprint`) load
 weights from `backend/weights/`. To prepare them:
@@ -174,9 +177,24 @@ If no weights are present, the detectors use documented heuristic fallbacks and
 mark their results as `degraded`, so the pipeline still runs end-to-end. Set
 `ADF_STRICT_MODELS=1` to require real weights instead.
 
+### Optional premium detector providers
+
+The core engine is self-hosted. To add paid external detector signals, set:
+
+```bash
+ADF_ENABLE_PAID_APIS=1
+ADF_PREMIUM_DETECTORS='[{"name":"provider","url":"https://provider.example/api/detect","api_key_env":"PROVIDER_API_KEY"}]'
+PROVIDER_API_KEY=...
+```
+
+Each provider must accept a `multipart/form-data` upload under the `file` field
+and return JSON with one of `fake_probability`, `deepfake_probability`,
+`synthetic_probability`, `score`, or `verdict`. Provider scores are combined as
+the optional `premium_consensus` detector.
+
 ---
 
-## 🔌 API
+## API
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -198,16 +216,16 @@ Full reference with Python examples lives in `frontend/app/api-docs.html`.
 
 ---
 
-## 🧩 Browser Extension
+## Browser Extension
 
 1. Open `chrome://extensions`, enable **Developer mode**.
 2. Click **Load unpacked** and select the `extension/` folder.
 3. Open the popup, set your **API Base URL** and **API key**.
-4. Right-click any image on the web → **🛡️ Check for deepfake**.
+4. Right-click any image on the web → **Check for deepfake**.
 
 ---
 
-## 💳 Connecting Digistore24
+## Connecting Digistore24
 
 1. Create your product in Digistore24 and copy its **product ID**.
 2. In `frontend/index.html`, replace **`YOURPRODUCTID`** in the buy links:
@@ -221,20 +239,24 @@ Full reference with Python examples lives in `frontend/app/api-docs.html`.
 
 ---
 
-## ☁️ Deployment
+## Deployment
 
 - **Backend**: deploy the `backend/Dockerfile` image (or the whole
   `docker-compose.yml`) to any container host (Fly.io, Render, ECS, a VPS…).
-  Provide `DATABASE_URL`, `REDIS_URL`, and `ADF_JWT_SECRET` via env vars.
+  Provide `DATABASE_URL`, `REDIS_URL`, `ADF_JWT_SECRET`, and production
+  `ADF_CORS_ORIGINS` via env vars.
 - **Frontend**: it's fully static — host `frontend/` on any CDN/static host
   (Netlify, Vercel, Cloudflare Pages, S3). Set the API base in the web app via
   the console helper `ADF.setApiBase("https://api.yourdomain.com")` or by
   editing `API_BASE` in `frontend/app/js/app.js`.
 - **Extension**: zip the `extension/` folder and publish to the Chrome Web Store.
+- **Launch checklist**: see `docs/launch-readiness.md` for DNS, SSL,
+  Digistore24, environment variables, and production hardening for
+  `antideepfakeai.com`.
 
 ---
 
-## ⚠️ Disclaimer
+## Disclaimer
 
 Deepfake detection is **probabilistic**. AntiDeepfake AI provides confidence
 scores and forensic indicators — not legal proof. Always review the full

@@ -32,7 +32,7 @@
   function render(payload) {
     var el = ensureBox();
     var close = '<span style="float:right;cursor:pointer;color:#9aa0bd" id="adf-close">✕</span>';
-    var head = '<div style="font-weight:800;margin-bottom:6px">🛡️ AntiDeepfake AI' + close + "</div>";
+    var head = '<div style="font-weight:800;margin-bottom:6px">AntiDeepfake AI' + close + "</div>";
 
     if (payload.state === "loading") {
       el.innerHTML = head + '<div style="color:#9aa0bd">' + payload.message + "</div>";

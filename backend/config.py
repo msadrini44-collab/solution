@@ -8,9 +8,10 @@ provided.
 """
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
-from typing import List
+from typing import List, TypedDict
 
 
 def _env_bool(name: str, default: bool = False) -> bool:
@@ -32,6 +33,12 @@ def _env_list(name: str, default: List[str]) -> List[str]:
     if not raw:
         return default
     return [item.strip().lower() for item in raw.split(",") if item.strip()]
+
+
+class PremiumProvider(TypedDict):
+    name: str
+    url: str
+    api_key_env: str
 
 
 # --------------------------------------------------------------------------- #
@@ -104,6 +111,7 @@ DETECTOR_WEIGHTS = {
     "gan_fingerprint": float(os.getenv("ADF_W_GAN", 0.14)),
     "metadata_forensics": float(os.getenv("ADF_W_METADATA", 0.08)),
     "pixel_forensics": float(os.getenv("ADF_W_PIXEL", 0.12)),
+    "premium_consensus": float(os.getenv("ADF_W_PREMIUM", 0.18)),
 }
 
 # Verdict thresholds applied to the final 0-100 confidence-of-authenticity score
@@ -118,11 +126,45 @@ VERDICT_THRESHOLDS = [
 
 
 # --------------------------------------------------------------------------- #
-# Optional paid APIs (disabled unless keys provided)
+# API / CORS
 # --------------------------------------------------------------------------- #
-SENSITY_API_KEY = os.getenv("SENSITY_API_KEY", "")
-HIVE_API_KEY = os.getenv("HIVE_API_KEY", "")
+CORS_ORIGINS = os.getenv("ADF_CORS_ORIGINS", "*")
+CORS_ALLOW_ORIGINS = (
+    ["*"]
+    if CORS_ORIGINS.strip() == "*"
+    else [origin.strip().rstrip("/") for origin in CORS_ORIGINS.split(",") if origin.strip()]
+)
+
+
+# --------------------------------------------------------------------------- #
+# Optional premium/provider detectors (disabled unless explicitly configured)
+# --------------------------------------------------------------------------- #
 ENABLE_PAID_APIS = _env_bool("ADF_ENABLE_PAID_APIS", False)
+
+
+def _premium_providers() -> List[PremiumProvider]:
+    raw = os.getenv("ADF_PREMIUM_DETECTORS", "").strip()
+    if not raw:
+        return []
+    try:
+        providers = json.loads(raw)
+    except json.JSONDecodeError:
+        return []
+    parsed: List[PremiumProvider] = []
+    if not isinstance(providers, list):
+        return parsed
+    for item in providers:
+        if not isinstance(item, dict):
+            continue
+        name = str(item.get("name", "")).strip()
+        url = str(item.get("url", "")).strip()
+        api_key_env = str(item.get("api_key_env", "")).strip()
+        if name and url and api_key_env:
+            parsed.append({"name": name, "url": url, "api_key_env": api_key_env})
+    return parsed
+
+
+PREMIUM_PROVIDERS = _premium_providers()
 
 
 # --------------------------------------------------------------------------- #
