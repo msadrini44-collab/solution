@@ -44,9 +44,11 @@ and the dashboard remains at `/app/`.
 
 ## Fly.io setup
 
-This repo includes `fly.toml`, `.dockerignore`, and
+This repo includes a root `Dockerfile`, `fly.toml`, `.dockerignore`, and
 `backend/requirements-fly.txt` for a deployable API at
-`https://api.antideepfakeai.com`.
+`https://api.antideepfakeai.com`. The root Dockerfile is intentional: Fly's
+GitHub integration auto-detects a root Dockerfile before it reads nested backend
+Dockerfiles.
 
 One-time Fly.io setup:
 

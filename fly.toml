@@ -2,10 +2,7 @@ app = "antideepfake-ai-api"
 primary_region = "iad"
 
 [build]
-  dockerfile = "backend/Dockerfile"
-
-  [build.args]
-    REQUIREMENTS_FILE = "backend/requirements-fly.txt"
+  dockerfile = "Dockerfile"
 
 [env]
   ADF_CORS_ORIGINS = "https://antideepfakeai.com,https://www.antideepfakeai.com"
