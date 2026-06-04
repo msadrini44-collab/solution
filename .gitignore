@@ -10,6 +10,7 @@ env/
 # AntiDeepfake AI runtime data (uploads, reports, db, model weights)
 backend/data/
 backend/weights/
+dist/
 *.db
 *.sqlite3
 

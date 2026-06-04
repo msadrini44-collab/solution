@@ -1,0 +1,44 @@
+app = "antideepfake-ai-api"
+primary_region = "iad"
+
+[build]
+  dockerfile = "backend/Dockerfile"
+
+  [build.args]
+    REQUIREMENTS_FILE = "backend/requirements-fly.txt"
+
+[env]
+  ADF_CORS_ORIGINS = "https://antideepfakeai.com,https://www.antideepfakeai.com"
+  ADF_DATA_DIR = "/data"
+  ADF_MODEL_DIR = "/app/backend/weights"
+  ADF_STRICT_MODELS = "0"
+  ADF_DEVICE = "cpu"
+
+[[mounts]]
+  source = "adf_data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 10
+    hard_limit = 20
+
+  [[http_service.checks]]
+    grace_period = "20s"
+    interval = "30s"
+    method = "GET"
+    timeout = "5s"
+    path = "/api/health"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory = "2gb"

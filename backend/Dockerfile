@@ -15,9 +15,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 # Install Python deps first for better layer caching.
-COPY backend/requirements.txt /app/backend/requirements.txt
+ARG REQUIREMENTS_FILE=backend/requirements.txt
+COPY backend/requirements*.txt /app/backend/
 RUN pip install --upgrade pip && \
-    pip install -r /app/backend/requirements.txt
+    pip install -r /app/${REQUIREMENTS_FILE}
 
 # Copy the application code.
 COPY backend /app/backend

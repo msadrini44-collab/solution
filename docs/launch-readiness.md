@@ -28,6 +28,44 @@ api    CNAME              -> backend host target
 Use your hosting provider's exact DNS target values. Enable HTTPS certificates
 for all three hostnames.
 
+## Vercel setup
+
+This repo includes `vercel.json` and a root `package.json` build script. In the
+Vercel project:
+
+- Framework preset: Other
+- Root directory: repository root
+- Build command: `npm run build`
+- Output directory: `dist`
+- Production domains: `antideepfakeai.com`, `www.antideepfakeai.com`
+
+The build copies `frontend/` into `dist/`, so the marketing site remains at `/`
+and the dashboard remains at `/app/`.
+
+## Fly.io setup
+
+This repo includes `fly.toml`, `.dockerignore`, and
+`backend/requirements-fly.txt` for a deployable API at
+`https://api.antideepfakeai.com`.
+
+One-time Fly.io setup:
+
+```bash
+flyctl apps create antideepfake-ai-api
+flyctl volumes create adf_data --app antideepfake-ai-api --region iad --size 10
+flyctl secrets set --app antideepfake-ai-api \
+  ADF_JWT_SECRET='<long-random-secret>' \
+  ADF_CORS_ORIGINS='https://antideepfakeai.com,https://www.antideepfakeai.com'
+flyctl certs add api.antideepfakeai.com --app antideepfake-ai-api
+```
+
+If you already created a Fly app with a different name, update the `app =` value
+in `fly.toml` and replace `antideepfake-ai-api` in the commands above.
+
+Then add `FLY_API_TOKEN` as a GitHub repository secret. The included
+`.github/workflows/fly-deploy.yml` deploys the backend on pushes to `main` and
+can also be run manually from GitHub Actions.
+
 ## Required environment variables
 
 Backend:

@@ -241,14 +241,19 @@ Full reference with Python examples lives in `frontend/app/api-docs.html`.
 
 ## Deployment
 
-- **Backend**: deploy the `backend/Dockerfile` image (or the whole
-  `docker-compose.yml`) to any container host (Fly.io, Render, ECS, a VPS…).
-  Provide `DATABASE_URL`, `REDIS_URL`, `ADF_JWT_SECRET`, and production
-  `ADF_CORS_ORIGINS` via env vars.
-- **Frontend**: it's fully static — host `frontend/` on any CDN/static host
-  (Netlify, Vercel, Cloudflare Pages, S3). Set the API base in the web app via
-  the console helper `ADF.setApiBase("https://api.yourdomain.com")` or by
-  editing `API_BASE` in `frontend/app/js/app.js`.
+- **Vercel frontend**: `vercel.json` builds `frontend/` into `dist/`; connect
+  the repo with root directory set to the repository root and output directory
+  set to `dist`.
+- **Fly.io backend**: `fly.toml` deploys `backend/Dockerfile` as
+  `antideepfake-ai-api`, using the lightweight Fly requirements profile. Set
+  `ADF_JWT_SECRET` as a Fly secret and add `FLY_API_TOKEN` to GitHub Actions for
+  automatic deploys from `main`.
+- **Other backend hosts**: deploy the `backend/Dockerfile` image (or the whole
+  `docker-compose.yml`) to any container host. Provide `DATABASE_URL`,
+  `REDIS_URL`, `ADF_JWT_SECRET`, and production `ADF_CORS_ORIGINS` via env vars.
+- **Frontend API base**: when hosted on `antideepfakeai.com`, the app defaults
+  to `https://api.antideepfakeai.com`; otherwise set it with
+  `ADF.setApiBase("https://api.yourdomain.com")`.
 - **Extension**: zip the `extension/` folder and publish to the Chrome Web Store.
 - **Launch checklist**: see `docs/launch-readiness.md` for DNS, SSL,
   Digistore24, environment variables, and production hardening for

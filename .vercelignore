@@ -1,0 +1,9 @@
+.git
+.venv
+backend/data
+backend/weights
+backend/__pycache__
+**/__pycache__
+*.pyc
+*.sqlite3
+*.db
