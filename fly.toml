@@ -1,4 +1,4 @@
-app = "antideepfake-ai-api"
+app = "antideepfakeai"
 primary_region = "iad"
 
 [build]

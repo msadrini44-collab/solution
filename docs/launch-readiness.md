@@ -53,16 +53,17 @@ Dockerfiles.
 One-time Fly.io setup:
 
 ```bash
-flyctl apps create antideepfake-ai-api
-flyctl volumes create adf_data --app antideepfake-ai-api --region iad --size 10
-flyctl secrets set --app antideepfake-ai-api \
+flyctl apps create antideepfakeai
+flyctl volumes create adf_data --app antideepfakeai --region iad --size 10
+flyctl secrets set --app antideepfakeai \
   ADF_JWT_SECRET='<long-random-secret>' \
   ADF_CORS_ORIGINS='https://antideepfakeai.com,https://www.antideepfakeai.com'
-flyctl certs add api.antideepfakeai.com --app antideepfake-ai-api
+flyctl certs add api.antideepfakeai.com --app antideepfakeai
 ```
 
-If you already created a Fly app with a different name, update the `app =` value
-in `fly.toml` and replace `antideepfake-ai-api` in the commands above.
+If you have not created the app yet, run `flyctl apps create antideepfakeai`
+first. If you created a Fly app with a different name, update the `app =` value
+in `fly.toml` and replace `antideepfakeai` in the commands above.
 
 Then add `FLY_API_TOKEN` as a GitHub repository secret. The included
 `.github/workflows/fly-deploy.yml` deploys the backend on pushes to `main` and

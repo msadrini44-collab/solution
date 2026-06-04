@@ -245,7 +245,7 @@ Full reference with Python examples lives in `frontend/app/api-docs.html`.
   the repo with root directory set to the repository root and output directory
   set to `dist`.
 - **Fly.io backend**: the root `Dockerfile` + `fly.toml` deploy
-  `antideepfake-ai-api`, using the lightweight Fly requirements profile. Set
+  `antideepfakeai`, using the lightweight Fly requirements profile. Set
   `ADF_JWT_SECRET` as a Fly secret and add `FLY_API_TOKEN` to GitHub Actions for
   automatic deploys from `main`.
 - **Other backend hosts**: deploy the `backend/Dockerfile` image (or the whole
