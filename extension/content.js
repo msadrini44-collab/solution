@@ -29,21 +29,27 @@
     return "#ff4d6d";
   }
 
+  function escapeHtml(value) {
+    return String(value == null ? "" : value).replace(/[&<>"']/g, function (ch) {
+      return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[ch];
+    });
+  }
+
   function render(payload) {
     var el = ensureBox();
     var close = '<span style="float:right;cursor:pointer;color:#9aa0bd" id="adf-close">✕</span>';
     var head = '<div style="font-weight:800;margin-bottom:6px">AntiDeepfake AI' + close + "</div>";
 
     if (payload.state === "loading") {
-      el.innerHTML = head + '<div style="color:#9aa0bd">' + payload.message + "</div>";
+      el.innerHTML = head + '<div style="color:#9aa0bd">' + escapeHtml(payload.message) + "</div>";
     } else if (payload.state === "error") {
-      el.innerHTML = head + '<div style="color:#ff4d6d">' + payload.message + "</div>" +
+      el.innerHTML = head + '<div style="color:#ff4d6d">' + escapeHtml(payload.message) + "</div>" +
         '<div style="color:#9aa0bd;font-size:12px;margin-top:6px">Set your API base & key in the extension popup.</div>';
     } else if (payload.state === "done") {
       var c = colorFor(payload.score);
       el.innerHTML = head +
-        '<div style="font-size:22px;font-weight:900;color:' + c + '">' + payload.verdict + "</div>" +
-        '<div style="color:#9aa0bd">Authenticity score: <b style="color:' + c + '">' + payload.score + "/100</b></div>";
+        '<div style="font-size:22px;font-weight:900;color:' + c + '">' + escapeHtml(payload.verdict) + "</div>" +
+        '<div style="color:#9aa0bd">Authenticity score: <b style="color:' + c + '">' + escapeHtml(payload.score) + "/100</b></div>";
     }
 
     var x = document.getElementById("adf-close");

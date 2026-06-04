@@ -17,6 +17,7 @@ are associated with the user when credentials are supplied.
 """
 from __future__ import annotations
 
+import asyncio
 import json
 import shutil
 import uuid
@@ -214,7 +215,7 @@ async def detect(
     db.commit()
 
     if sync:
-        _process_scan(scan_id, str(dest), filename)
+        await asyncio.to_thread(_process_scan, scan_id, str(dest), filename)
         db.refresh(scan)
         result = scan.result() or {}
         return _scan_response(scan, result, filename)
