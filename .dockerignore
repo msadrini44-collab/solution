@@ -1,0 +1,16 @@
+.git
+.github
+.venv
+dist
+frontend
+extension
+docs
+backend/data
+backend/weights
+backend/__pycache__
+**/__pycache__
+*.pyc
+*.sqlite3
+*.db
+.env
+.env.local

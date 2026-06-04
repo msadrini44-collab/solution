@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+
+# AntiDeepfake AI runtime data (uploads, reports, db, model weights)
+backend/data/
+backend/weights/
+dist/
+*.db
+*.sqlite3
+
+# Environment
+.env
+.env.local
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+.vercel

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AntiDeepfake AI</title>
+  <style>
+    :root { --accent:#5b6cff; --accent2:#a855f7; --green:#2ecc71; --amber:#f5a623; --red:#ff4d6d; }
+    * { box-sizing: border-box; }
+    body {
+      width: 320px; margin: 0; padding: 16px;
+      font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: #0a0b14; color: #e7e9f5;
+    }
+    .brand { display:flex; align-items:center; gap:8px; font-weight:800; font-size:16px; margin-bottom:12px; }
+    .logo { width:26px; height:26px; border-radius:7px; background:linear-gradient(135deg,#5b6cff,#a855f7); display:grid; place-items:center; }
+    label { display:block; font-size:12px; color:#9aa0bd; margin:10px 0 4px; }
+    input { width:100%; padding:9px 10px; border-radius:8px; border:1px solid #232742; background:#161929; color:#e7e9f5; font-size:13px; }
+    input:focus { outline:none; border-color:var(--accent); }
+    button { width:100%; padding:10px; border:none; border-radius:8px; font-weight:700; cursor:pointer; margin-top:10px; font-size:14px; }
+    .primary { background:linear-gradient(135deg,#5b6cff,#a855f7); color:#fff; }
+    .ghost { background:transparent; color:#e7e9f5; border:1px solid #232742; }
+    .hint { font-size:11px; color:#9aa0bd; margin-top:10px; line-height:1.4; }
+    .result { margin-top:14px; padding:12px; border:1px solid #232742; border-radius:10px; background:#161929; display:none; }
+    .result.show { display:block; }
+    .verdict { font-size:20px; font-weight:900; }
+    .saved { color:var(--green); font-size:12px; min-height:16px; margin-top:6px; }
+  </style>
+</head>
+<body>
+  <div class="brand"><span class="logo">ADF</span> AntiDeepfake AI</div>
+
+  <p class="hint">Right-click any image on a page → <b>“Check for deepfake”</b>. Configure your API connection below.</p>
+
+  <label for="apiBase">API Base URL</label>
+  <input id="apiBase" type="text" placeholder="http://localhost:8000" />
+
+  <label for="apiKey">API Key</label>
+  <input id="apiKey" type="password" placeholder="adf_..." />
+
+  <button class="primary" id="saveBtn">Save settings</button>
+  <div class="saved" id="saved"></div>
+
+  <div class="result" id="lastResult">
+    <div style="font-size:12px;color:#9aa0bd;margin-bottom:4px;">Last scan</div>
+    <div class="verdict" id="lastVerdict">—</div>
+    <div style="color:#9aa0bd;font-size:13px;" id="lastFile"></div>
+  </div>
+
+  <button class="ghost" id="openApp" style="margin-top:12px;">Open Web App</button>
+
+  <script src="popup.js"></script>
+</body>
+</html>

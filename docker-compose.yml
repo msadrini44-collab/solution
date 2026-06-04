@@ -1,0 +1,84 @@
+# AntiDeepfake AI — full local stack
+# Usage: docker-compose up --build
+#
+# Services:
+#   api      - FastAPI detection engine (port 8000)
+#   worker   - Celery worker for offloaded detection (optional but recommended)
+#   redis    - Celery broker / result backend
+#   db       - PostgreSQL for users + scan history
+#
+# The static frontend (frontend/) and browser extension (extension/) are served
+# separately (any static host / CDN), so they are not containerized here.
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: antideepfake
+      POSTGRES_PASSWORD: antideepfake
+      POSTGRES_DB: antideepfake
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U antideepfake"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      DATABASE_URL: postgresql+psycopg2://antideepfake:antideepfake@db:5432/antideepfake
+      REDIS_URL: redis://redis:6379/0
+      ADF_JWT_SECRET: ${ADF_JWT_SECRET:-change-me-in-production}
+      ADF_MODEL_DIR: /app/backend/weights
+      ADF_DATA_DIR: /app/backend/data
+    volumes:
+      - modeldata:/app/backend/weights
+      - scandata:/app/backend/data
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uvicorn backend.main:app --host 0.0.0.0 --port 8000
+
+  worker:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      DATABASE_URL: postgresql+psycopg2://antideepfake:antideepfake@db:5432/antideepfake
+      REDIS_URL: redis://redis:6379/0
+      ADF_MODEL_DIR: /app/backend/weights
+      ADF_DATA_DIR: /app/backend/data
+    volumes:
+      - modeldata:/app/backend/weights
+      - scandata:/app/backend/data
+    depends_on:
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+    command: celery -A backend.tasks.celery_app worker --loglevel=info
+
+volumes:
+  pgdata:
+  modeldata:
+  scandata:

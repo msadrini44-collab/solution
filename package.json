@@ -1,0 +1,9 @@
+{
+  "name": "antideepfake-ai",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "rm -rf dist && mkdir -p dist && cp -R frontend/. dist/",
+    "check": "node --check frontend/app/js/app.js && node --check frontend/assets/js/main.js && node --check extension/background.js && node --check extension/content.js && node --check extension/popup.js && python -m json.tool extension/manifest.json >/dev/null"
+  }
+}

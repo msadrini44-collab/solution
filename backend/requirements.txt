@@ -1,0 +1,36 @@
+# --- Web API ---
+fastapi==0.111.0
+uvicorn[standard]==0.30.1
+python-multipart==0.0.9
+pydantic[email]==2.7.4
+
+# --- Auth ---
+python-jose[cryptography]==3.3.0
+
+# --- Core CV / numerics (lightweight, always required) ---
+numpy==1.26.4
+scipy==1.13.1
+Pillow==10.3.0
+opencv-python-headless==4.10.0.84
+
+# --- Deep learning detectors (face forgery, GAN fingerprint) ---
+torch==2.3.1
+torchvision==0.18.1
+facenet-pytorch==2.6.0          # MTCNN face detector
+
+# --- Audio-visual sync ---
+librosa==0.10.2.post1
+
+# --- Landmark / liveness ---
+mediapipe==0.10.14
+dlib==19.24.4
+
+# --- Reporting / visualization ---
+matplotlib==3.9.0
+reportlab==4.2.0
+
+# --- Persistence & task queue ---
+sqlalchemy==2.0.30
+psycopg2-binary==2.9.9
+celery==5.4.0
+redis==5.0.4
