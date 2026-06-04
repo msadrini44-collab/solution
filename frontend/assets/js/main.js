@@ -46,33 +46,37 @@
 
   /* ---------- One free landing-page scan ---------- */
   var trialForm = document.getElementById("trialForm");
-  if (trialForm) {
+  var trialSubmit = document.getElementById("trialSubmit");
+  if (trialForm && trialSubmit) {
     var trialFile = document.getElementById("trialFile");
     var trialStatus = document.getElementById("trialStatus");
     var trialResult = document.getElementById("trialResult");
 
-    trialForm.addEventListener("submit", function (e) {
-      e.preventDefault();
-      if (!trialFile.files.length) return;
+    function runTrialScan(e) {
+      if (e) e.preventDefault();
+      if (!trialFile.files.length) {
+        trialStatus.textContent = "Choose an image first.";
+        return false;
+      }
       var file = trialFile.files[0];
       var body = new FormData();
       body.append("file", file);
 
-      trialStatus.textContent = "Uploading and analyzing with the production backend…";
+      trialStatus.textContent = "Reviewing the file…";
       trialResult.classList.add("hidden");
-      trialForm.querySelector("button").disabled = true;
+      trialSubmit.disabled = true;
 
       fetch(API_BASE + "/api/trial/detect", { method: "POST", body: body })
         .then(handleJson)
         .then(function (res) {
           var score = res.score == null ? "—" : Math.round(res.score);
           var notes = (res.decision_notes || []).slice(0, 2).map(escapeHtml).join("<br>");
-          trialStatus.textContent = "Analysis complete.";
+          trialStatus.textContent = "Review complete.";
           trialResult.innerHTML =
             '<div class="verdict-line"><strong>' + escapeHtml(res.verdict || "Result ready") + '</strong><span class="score">' + score + "/100</span></div>" +
-            '<p class="small">Evidence grade: ' + escapeHtml(res.evidence_grade || "review") + " · Detectors used: " + escapeHtml(res.detectors_used || "—") + "</p>" +
+            '<p class="small">Evidence grade: ' + escapeHtml(res.evidence_grade || "review") + " · Signals reviewed: " + escapeHtml(res.detectors_used || "—") + "</p>" +
             (notes ? '<p class="small" style="margin-top:10px;">' + notes + "</p>" : "") +
-            '<p class="small" style="margin-top:12px;">Create an account to keep history, download reports, and run more scans.</p>' +
+            '<p class="small" style="margin-top:12px;">Create an account to keep history, download reports, and review more files.</p>' +
             '<a class="btn btn-ghost" style="margin-top:14px;" href="app/index.html">Create account / log in</a>';
           trialResult.classList.remove("hidden");
         })
@@ -80,9 +84,13 @@
           trialStatus.textContent = err.message;
         })
         .finally(function () {
-          trialForm.querySelector("button").disabled = false;
+          trialSubmit.disabled = false;
         });
-    });
+      return false;
+    }
+
+    trialSubmit.addEventListener("click", runTrialScan);
+    window.handleTrialScan = runTrialScan;
   }
 
   /* ---------- Smooth scroll (with sticky-nav offset) ---------- */

@@ -167,7 +167,7 @@ h2.section-title { font-size: clamp(1.7rem, 3.4vw, 2.4rem); margin-bottom: 14px;
 .trial-points li::before { content: ""; position: absolute; left: 2px; top: 9px; width: 14px; height: 8px; border-left: 2px solid var(--accent); border-bottom: 2px solid var(--accent); transform: rotate(-45deg); }
 .trial-points code { color: #fff; background: var(--surface); border: 1px solid var(--line); padding: 2px 6px; border-radius: 6px; }
 .trial-card { background: var(--surface); border: 1px solid var(--line-strong); border-radius: 18px; padding: 28px; box-shadow: var(--shadow); }
-.trial-card form { display: grid; gap: 14px; }
+.trial-card #trialForm { display: grid; gap: 14px; }
 .trial-card label { color: #fff; font-weight: 700; }
 .trial-card input[type="file"] { width: 100%; background: var(--ink-2); border: 1px dashed var(--line-strong); border-radius: var(--radius); padding: 18px; color: var(--text-soft); }
 .trial-note { color: var(--text-dim); font-size: 0.84rem; }
